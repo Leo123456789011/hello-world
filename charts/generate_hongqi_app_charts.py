@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate 红期APP performance charts (2016-2026H1)."""
+"""Generate 红期APP performance charts (2021-2026H1)."""
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
@@ -9,10 +9,7 @@ from pathlib import Path
 plt.rcParams["font.sans-serif"] = ["WenQuanYi Micro Hei", "Droid Sans Fallback", "DejaVu Sans"]
 plt.rcParams["axes.unicode_minus"] = False
 
-YEARS = [
-    "2016", "2017", "2018", "2019", "2020", "2021",
-    "2022", "2023", "2024", "2025", "2026H1",
-]
+YEARS = ["2021", "2022", "2023", "2024", "2025", "2026H1"]
 
 COLOR_NEW = "#4472C4"
 COLOR_RENEW = "#ED7D31"
@@ -20,15 +17,14 @@ COLOR_TOTAL = "#1F1F1F"
 
 OUTPUT_DIR = Path(__file__).parent
 
-# 红期APP 2021 年上线，2016-2020 无数据
-PERF_NEW = [0, 0, 0, 0, 0, 343011.59, 248420.07, 375485.63, 495536.32, 521432.18, 253378.83]
-PERF_RENEW = [0, 0, 0, 0, 0, 447103.98, 499671.84, 456856.52, 476033.57, 361719.57, 221220.72]
+PERF_NEW = [343011.59, 248420.07, 375485.63, 495536.32, 521432.18, 253378.83]
+PERF_RENEW = [447103.98, 499671.84, 456856.52, 476033.57, 361719.57, 221220.72]
 
-CUST_NEW = [0, 0, 0, 0, 0, 85, 90, 154, 202, 191, 108]
-CUST_RENEW = [0, 0, 0, 0, 0, 52, 64, 102, 125, 120, 64]
+CUST_NEW = [85, 90, 154, 202, 191, 108]
+CUST_RENEW = [52, 64, 102, 125, 120, 64]
 
-AOV_NEW = [0, 0, 0, 0, 0, 4035.43, 2760.22, 2438.22, 2453.15, 2730.01, 2346.10]
-AOV_RENEW = [0, 0, 0, 0, 0, 8598.15, 7807.37, 4478.99, 3808.27, 3014.33, 3456.57]
+AOV_NEW = [4035.43, 2760.22, 2438.22, 2453.15, 2730.01, 2346.10]
+AOV_RENEW = [8598.15, 7807.37, 4478.99, 3808.27, 3014.33, 3456.57]
 
 
 def format_label(value: float, unit: str) -> str:
@@ -168,7 +164,7 @@ def main():
 
     charts = [
         (
-            "红期APP 2016-2026H1 业绩走势（新签 / 续签）",
+            "红期APP 2021-2026H1 业绩走势（新签 / 续签）",
             "业绩（万元）",
             PERF_NEW,
             PERF_RENEW,
@@ -177,7 +173,7 @@ def main():
             f"{prefix}_performance.png",
         ),
         (
-            "红期APP 2016-2026H1 客户数走势（新签 / 续签）",
+            "红期APP 2021-2026H1 客户数走势（新签 / 续签）",
             "客户数（家）",
             CUST_NEW,
             CUST_RENEW,
@@ -198,7 +194,7 @@ def main():
     fig, ax = plt.subplots(figsize=(12, 6.2), dpi=150)
     draw_aov_chart(
         ax,
-        "红期APP 2016-2026H1 客单价走势（新签 / 续签）",
+        "红期APP 2021-2026H1 客单价走势（新签 / 续签）",
         PERF_NEW,
         PERF_RENEW,
         CUST_NEW,
@@ -214,7 +210,7 @@ def main():
     fig, axes = plt.subplots(3, 1, figsize=(12, 16), dpi=150)
     draw_stacked_chart(
         axes[0],
-        "红期APP 2016-2026H1 业绩走势（新签 / 续签）",
+        "红期APP 2021-2026H1 业绩走势（新签 / 续签）",
         "业绩（万元）",
         PERF_NEW,
         PERF_RENEW,
@@ -223,7 +219,7 @@ def main():
     )
     draw_stacked_chart(
         axes[1],
-        "红期APP 2016-2026H1 客户数走势（新签 / 续签）",
+        "红期APP 2021-2026H1 客户数走势（新签 / 续签）",
         "客户数（家）",
         CUST_NEW,
         CUST_RENEW,
@@ -232,7 +228,7 @@ def main():
     )
     draw_aov_chart(
         axes[2],
-        "红期APP 2016-2026H1 客单价走势（新签 / 续签）",
+        "红期APP 2021-2026H1 客单价走势（新签 / 续签）",
         PERF_NEW,
         PERF_RENEW,
         CUST_NEW,
