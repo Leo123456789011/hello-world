@@ -7,12 +7,13 @@ from pathlib import Path
 NAMES = [n.strip() for n in Path("customer_names.txt").read_text(encoding="utf-8").splitlines() if n.strip()]
 
 PERSON_NAMES = {
-    "刘晓明", "周琎", "南志云", "李平野", "王斌华", "王绎翔",
+    "刘晓明", "南志云", "李平野", "王斌华", "王绎翔",
     "石景涛", "胡洋洋", "郁卫华", "陈荣跃",
+    "房兴旭", "赖永春", "陈泓霖", "马玉坤",
 }
 
 OTHER_MARKERS = {
-    "中间市场部", "产品管理部", "百万期货", "红期分享测试",
+    "中间市场部", "产品管理部", "营销管理部", "百万期货", "红期分享测试",
     "富宝账号维护", "账号已注销", "全国畜牧总站",
 }
 
@@ -286,7 +287,7 @@ MANUAL = {
 
 
 def classify(name: str):
-    if name in ("个人", "个体", "个体期货") or name in PERSON_NAMES:
+    if name in ("个人", "个体", "个体期货", "期货") or name in PERSON_NAMES:
         return ("个人客户", "个人客户", "个人客户")
     if name in OTHER_MARKERS:
         return ("其他", "其他", "")
