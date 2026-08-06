@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>红期终端 · 基本面极端雷达（可交互原型）</title>
+  <style>
+    :root {
+      --bg-app: #0f1419;
+      --bg-panel: #161c24;
+      --bg-elevated: #1c2430;
+      --bg-hover: #243041;
+      --bg-active: #2a3a4f;
+      --border: #2c3848;
+      --border-soft: #232d3b;
+      --text: #e8eef6;
+      --text-secondary: #9aabbd;
+      --text-muted: #6b7c8f;
+      --accent: #3d8bfd;
+      --accent-soft: rgba(61, 139, 253, 0.15);
+      --high: #e85d4c;
+      --high-soft: rgba(232, 93, 76, 0.15);
+      --low: #2fbf71;
+      --low-soft: rgba(47, 191, 113, 0.15);
+      --warn: #e6a23c;
+      --warn-soft: rgba(230, 162, 60, 0.15);
+      --fuse: #c084fc;
+      --fuse-soft: rgba(192, 132, 252, 0.15);
+      --up: #e85d4c;
+      --down: #2fbf71;
+      --font: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      --mono: "JetBrains Mono", "Consolas", "SF Mono", monospace;
+      --radius: 4px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font);
+      background: var(--bg-app);
+      color: var(--text);
+      font-size: 13px;
+      overflow: hidden;
+      user-select: none;
+    }
+    button, input, select { font: inherit; color: inherit; }
+    button { cursor: pointer; border: none; background: none; }
+    table { border-collapse: collapse; width: 100%; }
+
+    /* Shell */
+    .app {
+      display: grid;
+      grid-template-rows: 36px 32px 1fr 24px;
+      height: 100vh;
+    }
+
+    /* Title bar */
+    .titlebar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 12px;
+      background: #0b1015;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: #fff;
+    }
+    .logo-mark {
+      width: 18px; height: 18px;
+      border-radius: 3px;
+      background: linear-gradient(135deg, #3d8bfd, #1a5fd0);
+      display: grid; place-items: center;
+      font-size: 11px; font-weight: 800; color: #fff;
+    }
+    .menubar { display: flex; gap: 2px; }
+    .menubar button {
+      padding: 4px 10px;
+      color: var(--text-secondary);
+      border-radius: var(--radius);
+    }
+    .menubar button:hover { background: var(--bg-hover); color: var(--text); }
+    .titlebar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+    .badge-live {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: rgba(47, 191, 113, 0.12);
+      color: var(--low);
+      font-size: 11px;
+    }
+    .badge-live i {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--low);
+      box-shadow: 0 0 0 3px rgba(47, 191, 113, 0.2);
+    }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+    }
+    .crumb { color: var(--text-muted); }
+    .crumb strong { color: var(--text); font-weight: 600; }
+    .toolbar-actions { margin-left: auto; display: flex; gap: 6px; }
+    .btn {
+      height: 24px;
+      padding: 0 10px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn:hover { background: var(--bg-hover); color: var(--text); }
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .btn.primary:hover { filter: brightness(1.08); }
+
+    /* Main */
+    .main {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      min-height: 0;
+    }
+    .rail {
+      background: #0b1015;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 0;
+      gap: 4px;
+    }
+    .rail-item {
+      width: 44px; height: 44px;
+      border-radius: var(--radius);
+      color: var(--text-muted);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 2px; font-size: 10px;
+    }
+    .rail-item:hover { background: var(--bg-hover); color: var(--text-secondary); }
+    .rail-item.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .rail-item svg { width: 18px; height: 18px; }
+
+    .workspace {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 0;
+      background: var(--bg-app);
+    }
+
+    /* Module header */
+    .module-header {
+      padding: 10px 14px 0;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+    }
+    .module-title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .module-title { font-size: 16px; font-weight: 700; }
+    .module-desc { color: var(--text-muted); font-size: 12px; }
+    .tabs { display: flex; gap: 0; }
+    .tab {
+      padding: 8px 16px;
+      color: var(--text-secondary);
+      border-bottom: 2px solid transparent;
+      position: relative;
+      top: 1px;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      font-weight: 600;
+    }
+    .tab .count {
+      margin-left: 6px;
+      padding: 0 5px;
+      border-radius: 8px;
+      background: var(--bg-elevated);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .tab.active .count {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    /* Filters */
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 14px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .field {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .field label { color: var(--text-muted); font-size: 12px; }
+    .field select, .field input[type="search"] {
+      height: 26px;
+      padding: 0 8px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      outline: none;
+      min-width: 100px;
+    }
+    .field select:focus, .field input:focus { border-color: var(--accent); }
+    .field input[type="search"] { width: 160px; }
+    .chip-group { display: flex; gap: 4px; }
+    .chip {
+      height: 26px;
+      padding: 0 10px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+    }
+    .chip:hover { background: var(--bg-hover); }
+    .chip.on-high { background: var(--high-soft); border-color: rgba(232,93,76,.45); color: #ff8f82; }
+    .chip.on-low { background: var(--low-soft); border-color: rgba(47,191,113,.45); color: #5fd992; }
+    .chip.on-all { background: var(--accent-soft); border-color: rgba(61,139,253,.45); color: var(--accent); }
+    .filters-right { margin-left: auto; display: flex; gap: 8px; align-items: center; color: var(--text-muted); font-size: 12px; }
+
+    /* Content split */
+    .content {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      min-height: 0;
+    }
+    .content.compare-mode {
+      grid-template-columns: 1fr;
+    }
+    .content.compare-mode .detail { display: none; }
+
+    .list-panel {
+      min-height: 0;
+      overflow: auto;
+      border-right: 1px solid var(--border);
+    }
+
+    /* Table */
+    .data-table thead {
+      position: sticky; top: 0; z-index: 2;
+      background: #1a222d;
+    }
+    .data-table th {
+      text-align: left;
+      padding: 8px 10px;
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 12px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .data-table th.sortable { cursor: pointer; }
+    .data-table th.sortable:hover { color: var(--text); }
+    .data-table th.num, .data-table td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 12px; }
+    .data-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-soft);
+      vertical-align: middle;
+    }
+    .data-table tbody tr { cursor: pointer; }
+    .data-table tbody tr:hover { background: var(--bg-hover); }
+    .data-table tbody tr.selected { background: var(--bg-active); }
+    .data-table tbody tr.checked { box-shadow: inset 3px 0 0 var(--accent); }
+
+    .symbol {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .symbol-code {
+      font-weight: 600; color: #fff;
+    }
+    .symbol-name { color: var(--text-muted); font-size: 12px; }
+    .sector-tag {
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 3px;
+      background: var(--bg-elevated);
+      color: var(--text-muted);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      height: 20px;
+      padding: 0 7px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .tag-high { background: var(--high-soft); color: #ff8f82; }
+    .tag-low { background: var(--low-soft); color: #5fd992; }
+    .tag-fuse { background: var(--fuse-soft); color: #d4a8ff; }
+    .tag-both { background: var(--warn-soft); color: #f0b95a; }
+
+    .pct-bar {
+      display: flex; align-items: center; gap: 8px;
+      min-width: 120px;
+    }
+    .pct-track {
+      flex: 1; height: 6px; border-radius: 3px;
+      background: #2a3444;
+      position: relative; overflow: hidden;
+    }
+    .pct-fill {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      border-radius: 3px;
+    }
+    .pct-fill.high { background: linear-gradient(90deg, #5a6a7d, var(--high)); }
+    .pct-fill.low { background: linear-gradient(90deg, var(--low), #5a6a7d); }
+    .pct-fill.mid { background: #5a6a7d; }
+    .pct-val { width: 36px; text-align: right; font-family: var(--mono); font-size: 12px; }
+
+    .chg-up { color: var(--up); }
+    .chg-down { color: var(--down); }
+
+    .spark {
+      width: 72px; height: 22px; display: block;
+    }
+
+    .row-actions { display: flex; gap: 4px; opacity: 0; }
+    tr:hover .row-actions, tr.selected .row-actions { opacity: 1; }
+    .icon-btn {
+      width: 22px; height: 22px;
+      border-radius: 3px;
+      color: var(--text-muted);
+      display: grid; place-items: center;
+    }
+    .icon-btn:hover { background: var(--bg-elevated); color: var(--accent); }
+    .icon-btn.on { color: var(--accent); background: var(--accent-soft); }
+
+    /* Detail panel */
+    .detail {
+      background: var(--bg-panel);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: auto;
+    }
+    .detail-empty {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      color: var(--text-muted);
+      padding: 24px;
+      text-align: center;
+      line-height: 1.6;
+    }
+    .detail-head {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .detail-head h2 {
+      font-size: 15px;
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 6px;
+    }
+    .detail-meta {
+      display: flex; flex-wrap: wrap; gap: 10px 16px;
+      color: var(--text-muted); font-size: 12px;
+    }
+    .detail-meta b { color: var(--text); font-weight: 600; font-family: var(--mono); }
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 12px 16px;
+    }
+    .kpi {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      padding: 10px;
+    }
+    .kpi .k { color: var(--text-muted); font-size: 11px; margin-bottom: 4px; }
+    .kpi .v { font-size: 16px; font-weight: 700; font-family: var(--mono); }
+    .chart-box {
+      padding: 8px 16px 4px;
+    }
+    .chart-box h3 {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex; justify-content: space-between;
+    }
+    .chart-wrap {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      padding: 8px;
+      height: 200px;
+    }
+    canvas { width: 100%; height: 100%; display: block; }
+    .detail-section {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border-soft);
+    }
+    .detail-section h3 {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    .peer-list { display: flex; flex-direction: column; gap: 6px; }
+    .peer {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 8px;
+      border-radius: var(--radius);
+      background: var(--bg-elevated);
+      cursor: pointer;
+    }
+    .peer:hover { background: var(--bg-hover); }
+    .peer .name { flex: 1; }
+    .detail-actions {
+      padding: 12px 16px 16px;
+      display: flex; gap: 8px;
+      margin-top: auto;
+      border-top: 1px solid var(--border-soft);
+      position: sticky; bottom: 0;
+      background: var(--bg-panel);
+    }
+    .detail-actions .btn { height: 30px; flex: 1; justify-content: center; }
+
+    /* Compare view */
+    .compare-view {
+      display: none;
+      grid-template-rows: auto auto 1fr;
+      min-height: 0;
+      overflow: auto;
+    }
+    .compare-view.active { display: grid; }
+    .radar-view.hidden { display: none; }
+
+    .template-bar {
+      display: flex;
+      gap: 8px;
+      padding: 10px 14px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border-soft);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .template-bar .label { color: var(--text-muted); font-size: 12px; }
+    .tpl {
+      height: 28px;
+      padding: 0 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+    }
+    .tpl:hover { color: var(--text); background: var(--bg-hover); }
+    .tpl.active {
+      border-color: rgba(61,139,253,.5);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .compare-controls {
+      display: flex;
+      gap: 16px;
+      padding: 10px 14px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border-soft);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .check-grid {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .check-item {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 8px;
+      border-radius: var(--radius);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .check-item input { accent-color: var(--accent); }
+    .check-item.on { border-color: rgba(61,139,253,.5); background: var(--accent-soft); }
+
+    .compare-body {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 0;
+      min-height: 0;
+    }
+    .compare-chart-panel, .compare-table-panel {
+      padding: 14px;
+      min-height: 0;
+    }
+    .compare-chart-panel {
+      border-right: 1px solid var(--border);
+    }
+    .compare-chart-panel h3, .compare-table-panel h3 {
+      font-size: 13px;
+      margin-bottom: 10px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      margin-bottom: 8px; font-size: 12px; color: var(--text-secondary);
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend i { width: 10px; height: 3px; border-radius: 2px; display: inline-block; }
+    .big-chart {
+      height: 340px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      padding: 10px;
+    }
+    .mode-switch { display: flex; gap: 4px; }
+    .mode-switch .chip { height: 24px; font-size: 12px; }
+    .mode-switch .chip.on { background: var(--accent-soft); border-color: rgba(61,139,253,.45); color: var(--accent); }
+
+    /* Status bar */
+    .statusbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 12px;
+      background: #0b1015;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+    .statusbar .sep { width: 1px; height: 12px; background: var(--border); }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      right: 20px; bottom: 40px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      box-shadow: 0 8px 24px rgba(0,0,0,.4);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: .2s ease;
+      pointer-events: none;
+      z-index: 99;
+      max-width: 320px;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    .hint {
+      padding: 8px 14px;
+      background: rgba(61,139,253,.08);
+      border-bottom: 1px solid rgba(61,139,253,.2);
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+    .hint b { color: var(--accent); }
+
+    .checkbox-col { width: 28px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="titlebar">
+      <div class="logo"><span class="logo-mark">红</span>红期终端</div>
+      <nav class="menubar">
+        <button>文件</button>
+        <button>行情</button>
+        <button>数据</button>
+        <button style="color:var(--accent)">基本面</button>
+        <button>投研</button>
+        <button>工具</button>
+        <button>帮助</button>
+      </nav>
+      <div class="titlebar-right">
+        <span class="badge-live"><i></i>行情已连接</span>
+        <span>账号：demo_pm</span>
+        <span>2026-08-06 14:32:08</span>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <div class="crumb">基本面 / <strong>极端雷达</strong></div>
+      <div class="toolbar-actions">
+        <button class="btn" id="btnExport">导出 Excel</button>
+        <button class="btn" id="btnSubscribeAll">订阅当前筛选</button>
+        <button class="btn primary" id="btnRefresh">刷新数据</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <aside class="rail">
+        <button class="rail-item" title="行情"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-7"/></svg>行情</button>
+        <button class="rail-item active" title="基本面"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>基本面</button>
+        <button class="rail-item" title="自选"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.5 6.5L21 10l-5 4.2L17.5 21 12 17.5 6.5 21 8 14.2 3 10l6.5-.5L12 3z"/></svg>自选</button>
+        <button class="rail-item" title="资讯"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/></svg>资讯</button>
+      </aside>
+
+      <div class="workspace">
+        <div class="module-header">
+          <div class="module-title-row">
+            <div class="module-title">基本面极端雷达</div>
+            <div class="module-desc">扫描库存 / 产能 / 开工率等指标的历史高位、低位与异常变化速度</div>
+          </div>
+          <div class="tabs" role="tablist">
+            <button class="tab active" data-tab="radar">极端雷达 <span class="count" id="countRadar">0</span></button>
+            <button class="tab" data-tab="fuse">速度异常 · 引线 <span class="count" id="countFuse">0</span></button>
+            <button class="tab" data-tab="compare">产业链对比</button>
+          </div>
+        </div>
+
+        <!-- RADAR + FUSE VIEW -->
+        <div class="radar-view" id="radarView">
+          <div class="hint">
+            <b>原型说明：</b>点击表格行查看右侧详情；勾选多行后可「加入对比」；切换顶部 Tab 体验引线与产业链对比。数据为演示样本。
+          </div>
+          <div class="filters" id="filterBar">
+            <div class="field">
+              <label>板块</label>
+              <select id="filterSector">
+                <option value="all">全部</option>
+                <option value="黑色">黑色</option>
+                <option value="能化">能化</option>
+                <option value="有色">有色</option>
+                <option value="农产品">农产品</option>
+                <option value="畜牧">畜牧</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>指标</label>
+              <select id="filterMetric">
+                <option value="all">全部指标</option>
+                <option value="库存">库存</option>
+                <option value="开工率">开工率</option>
+                <option value="产能">产能</option>
+                <option value="种植面积">种植面积</option>
+                <option value="存栏">存栏</option>
+                <option value="补栏">补栏</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>历史窗口</label>
+              <select id="filterWindow">
+                <option value="3">近3年</option>
+                <option value="5" selected>近5年</option>
+                <option value="10">近10年</option>
+              </select>
+            </div>
+            <div class="chip-group" id="extremeChips">
+              <button class="chip on-all" data-extreme="all">全部极端</button>
+              <button class="chip" data-extreme="high">历史高位</button>
+              <button class="chip" data-extreme="low">历史低位</button>
+            </div>
+            <div class="field">
+              <label>搜索</label>
+              <input type="search" id="filterSearch" placeholder="品种 / 指标" />
+            </div>
+            <div class="filters-right">
+              <span id="resultMeta">—</span>
+              <button class="btn" id="btnAddCompare" disabled>加入对比 (0)</button>
+            </div>
+          </div>
+
+          <div class="content" id="contentSplit">
+            <div class="list-panel">
+              <table class="data-table" id="dataTable">
+                <thead>
+                  <tr>
+                    <th class="checkbox-col"><input type="checkbox" id="checkAll" title="全选当前页" /></th>
+                    <th>品种</th>
+                    <th>板块</th>
+                    <th>指标</th>
+                    <th>状态</th>
+                    <th class="num sortable" data-sort="value">当前值</th>
+                    <th class="sortable" data-sort="percentile">分位数</th>
+                    <th class="num sortable" data-sort="wow">周环比</th>
+                    <th class="num sortable" data-sort="yoy">同比</th>
+                    <th>近1年</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+              </table>
+            </div>
+
+            <aside class="detail" id="detailPanel">
+              <div class="detail-empty" id="detailEmpty">
+                选择左侧任意一行<br />查看分位带图、同产业链对照与订阅
+              </div>
+              <div id="detailBody" style="display:none; flex-direction:column; min-height:100%;">
+                <div class="detail-head">
+                  <h2>
+                    <span id="dTitle">—</span>
+                    <span class="tag" id="dTag">—</span>
+                  </h2>
+                  <div class="detail-meta">
+                    <span>当前值 <b id="dValue">—</b></span>
+                    <span>分位 <b id="dPct">—</b></span>
+                    <span>窗口 <b id="dWindow">近5年</b></span>
+                    <span>更新 <b id="dUpdated">2026-08-01</b></span>
+                    <span>来源 <b id="dSource">红期产业库</b></span>
+                  </div>
+                </div>
+                <div class="kpi-row">
+                  <div class="kpi"><div class="k">周环比</div><div class="v" id="dWow">—</div></div>
+                  <div class="kpi"><div class="k">同比</div><div class="v" id="dYoy">—</div></div>
+                  <div class="kpi"><div class="k">连续同向周数</div><div class="v" id="dStreak">—</div></div>
+                </div>
+                <div class="chart-box">
+                  <h3>
+                    <span>历史走势 · 分位色带（P10–P90）</span>
+                    <span style="color:var(--text-muted);font-weight:400">演示曲线</span>
+                  </h3>
+                  <div class="chart-wrap"><canvas id="detailChart"></canvas></div>
+                </div>
+                <div class="detail-section">
+                  <h3>同产业链 · 同指标极端程度</h3>
+                  <div class="peer-list" id="peerList"></div>
+                </div>
+                <div class="detail-actions">
+                  <button class="btn" id="btnDetailCompare">同产业链对比</button>
+                  <button class="btn primary" id="btnDetailSub">订阅阈值</button>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+
+        <!-- COMPARE VIEW -->
+        <div class="compare-view" id="compareView">
+          <div class="hint">
+            <b>产业链对比：</b>优先用预设模板；也可勾选同板块品种。默认用<strong>分位数</strong>对齐量纲，避免万吨与百分比硬叠。
+          </div>
+          <div class="template-bar">
+            <span class="label">预设模板</span>
+            <button class="tpl active" data-tpl="black">黑色产业链</button>
+            <button class="tpl" data-tpl="poly">聚酯链</button>
+            <button class="tpl" data-tpl="oil">油脂油料</button>
+            <button class="tpl" data-tpl="hog">畜牧</button>
+            <span class="label" style="margin-left:8px">指标</span>
+            <select id="compareMetric">
+              <option value="库存">库存</option>
+              <option value="开工率">开工率</option>
+              <option value="存栏">存栏</option>
+            </select>
+            <div class="mode-switch" style="margin-left:auto">
+              <button class="chip on" data-mode="percentile">分位数</button>
+              <button class="chip" data-mode="yoy">同比%</button>
+              <button class="chip" data-mode="abs">绝对值分面</button>
+            </div>
+          </div>
+          <div class="compare-controls">
+            <span class="label" style="color:var(--text-muted)">自定义勾选（同板块，最多6个）</span>
+            <div class="check-grid" id="compareChecks"></div>
+          </div>
+          <div class="compare-body">
+            <div class="compare-chart-panel">
+              <h3>
+                <span id="compareChartTitle">黑色产业链 · 库存分位数对比</span>
+                <button class="btn" id="btnSaveTpl">存为我的模板</button>
+              </h3>
+              <div class="legend" id="compareLegend"></div>
+              <div class="big-chart"><canvas id="compareChart"></canvas></div>
+            </div>
+            <div class="compare-table-panel">
+              <h3>当前截面</h3>
+              <table class="data-table" id="compareTable">
+                <thead>
+                  <tr>
+                    <th>品种</th>
+                    <th class="num">当前值</th>
+                    <th class="num">分位</th>
+                    <th class="num">周环比</th>
+                    <th>状态</th>
+                  </tr>
+                </thead>
+                <tbody id="compareTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="statusbar">
+      <span>红期终端 原型 v0.1</span>
+      <span class="sep"></span>
+      <span>口径：分位 = 当前值在选定历史窗口内的百分位；高位 ≥P90，低位 ≤P10</span>
+      <span class="sep"></span>
+      <span id="statusMsg">就绪</span>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    /* ========== Demo data ========== */
+    const CHAINS = {
+      black: { name: "黑色产业链", sector: "黑色", symbols: ["螺纹钢", "热卷", "铁矿石", "焦煤", "焦炭"] },
+      poly:  { name: "聚酯链", sector: "能化", symbols: ["PX", "PTA", "乙二醇", "短纤"] },
+      oil:   { name: "油脂油料", sector: "农产品", symbols: ["豆油", "菜油", "棕榈油", "豆粕"] },
+      hog:   { name: "畜牧", sector: "畜牧", symbols: ["生猪"] },
+    };
+
+    const COLORS = ["#3d8bfd", "#e85d4c", "#2fbf71", "#e6a23c", "#c084fc", "#22d3ee"];
+
+    const RAW = [
+      { id:1, symbol:"燃料油", sector:"能化", metric:"库存", value:186.2, unit:"万吨", percentile:96, wow:4.8, yoy:22.1, streak:5, fuse:true, source:"红期产业库", updated:"2026-08-01" },
+      { id:2, symbol:"焦煤", sector:"黑色", metric:"库存", value:248.6, unit:"万吨", percentile:93, wow:3.1, yoy:15.4, streak:4, fuse:true, source:"红期产业库", updated:"2026-08-01" },
+      { id:3, symbol:"原油", sector:"能化", metric:"库存", value:412.0, unit:"万吨", percentile:91, wow:-1.2, yoy:8.6, streak:1, fuse:false, source:"红期产业库", updated:"2026-08-01" },
+      { id:4, symbol:"螺纹钢", sector:"黑色", metric:"库存", value:582.4, unit:"万吨", percentile:88, wow:2.4, yoy:11.2, streak:3, fuse:false, source:"红期产业库", updated:"2026-08-01" },
+      { id:5, symbol:"铁矿石", sector:"黑色", metric:"库存", value:14820, unit:"万吨", percentile:86, wow:1.1, yoy:6.3, streak:2, fuse:false, source:"红期产业库", updated:"2026-08-01" },
+      { id:6, symbol:"尿素", sector:"能化", metric:"库存", value:96.5, unit:"万吨", percentile:84, wow:5.6, yoy:19.0, streak:6, fuse:true, source:"红期产业库", updated:"2026-08-01" },
+      { id:7, symbol:"红枣", sector:"农产品", metric:"库存", value:18.2, unit:"万吨", percentile:12, wow:-6.2, yoy:-14.5, streak:3, fuse:true, source:"红期产业库", updated:"2026-08-01" },
+      { id:8, symbol:"乙二醇", sector:"能化", metric:"库存", value:42.1, unit:"万吨", percentile:9, wow:-3.4, yoy:-18.2, streak:4, fuse:false, source:"红期产业库", updated:"2026-08-01" },
+      { id:9, symbol:"锡", sector:"有色", metric:"库存", value:3.8, unit:"万吨", percentile:8, wow:-2.1, yoy:-9.4, streak:2, fuse:false, source:"红期产业库", updated:"2026-08-01" },
+      { id:10, symbol:"铝", sector:"有色", metric:"库存", value:52.6, unit:"万吨", percentile:18, wow:-0.8, yoy:-4.1, streak:1, fuse:false, source:"红期产业库", updated:"2026-08-01" },
+      { id:11, symbol:"纯碱", sector:"能化", metric:"开工率", value:78.2, unit:"%", percentile:11, wow:-2.8, yoy:-6.5, streak:3, fuse:false, source:"红期产业库", updated:"2026-07-31" },
+      { id:12, symbol:"多晶硅", sector:"能化", metric:"开工率", value:62.4, unit:"%", percentile:7, wow:1.5, yoy:-12.0, streak:1, fuse:false, source:"红期产业库", updated:"2026-07-31" },
+      { id:13, symbol:"焦炭", sector:"黑色", metric:"开工率", value:81.5, unit:"%", percentile:22, wow:-1.0, yoy:-3.2, streak:2, fuse:false, source:"红期产业库", updated:"2026-07-31" },
+      { id:14, symbol:"PTA", sector:"能化", metric:"开工率", value:86.8, unit:"%", percentile:79, wow:0.6, yoy:3.1, streak:2, fuse:false, source:"红期产业库", updated:"2026-07-31" },
+      { id:15, symbol:"PX", sector:"能化", metric:"开工率", value:88.1, unit:"%", percentile:82, wow:0.4, yoy:2.2, streak:1, fuse:false, source:"红期产业库", updated:"2026-07-31" },
+      { id:16, symbol:"短纤", sector:"能化", metric:"开工率", value:74.0, unit:"%", percentile:35, wow:-0.5, yoy:-1.8, streak:1, fuse:false, source:"红期产业库", updated:"2026-07-31" },
+      { id:17, symbol:"甲醇", sector:"能化", metric:"产能", value:11850, unit:"万吨/年", percentile:94, wow:0.0, yoy:8.0, streak:0, fuse:false, source:"红期产业库", updated:"2026-07-15" },
+      { id:18, symbol:"PVC", sector:"能化", metric:"产能", value:3020, unit:"万吨/年", percentile:90, wow:0.0, yoy:5.4, streak:0, fuse:false, source:"红期产业库", updated:"2026-07-15" },
+      { id:19, symbol:"玉米", sector:"农产品", metric:"种植面积", value:44210, unit:"万亩", percentile:72, wow:0.0, yoy:1.8, streak:0, fuse:false, source:"农业农村部/红期", updated:"2026-06-30" },
+      { id:20, symbol:"棉花", sector:"农产品", metric:"种植面积", value:4120, unit:"万亩", percentile:28, wow:0.0, yoy:-3.6, streak:0, fuse:false, source:"农业农村部/红期", updated:"2026-06-30" },
+      { id:21, symbol:"生猪", sector:"畜牧", metric:"存栏", value:42850, unit:"万头", percentile:81, wow:0.9, yoy:4.2, streak:2, fuse:false, source:"红期畜牧", updated:"2026-07-31" },
+      { id:22, symbol:"生猪", sector:"畜牧", metric:"补栏", value:1860, unit:"万头", percentile:14, wow:-4.5, yoy:-8.1, streak:3, fuse:true, source:"红期畜牧", updated:"2026-07-31" },
+      { id:23, symbol:"热卷", sector:"黑色", metric:"库存", value:312.8, unit:"万吨", percentile:76, wow:1.6, yoy:7.1, streak:2, fuse:false, source:"红期产业库", updated:"2026-08-01" },
+      { id:24, symbol:"豆油", sector:"农产品", metric:"库存", value:92.4, unit:"万吨", percentile:64, wow:-1.1, yoy:2.5, streak:1, fuse:false, source:"红期产业库", updated:"2026-08-01" },
+      { id:25, symbol:"菜油", sector:"农产品", metric:"库存", value:48.6, unit:"万吨", percentile:58, wow:0.7, yoy:1.2, streak:1, fuse:false, source:"红期产业库", updated:"2026-08-01" },
+      { id:26, symbol:"棕榈油", sector:"农产品", metric:"库存", value:38.2, unit:"万吨", percentile:41, wow:-2.3, yoy:-5.0, streak:2, fuse:false, source:"红期产业库", updated:"2026-08-01" },
+      { id:27, symbol:"豆粕", sector:"农产品", metric:"库存", value:76.5, unit:"万吨", percentile:33, wow:-1.8, yoy:-6.4, streak:2, fuse:false, source:"红期产业库", updated:"2026-08-01" },
+      { id:28, symbol:"玻璃", sector:"黑色", metric:"开工率", value:84.2, unit:"%", percentile:45, wow:0.2, yoy:-0.8, streak:1, fuse:false, source:"红期产业库", updated:"2026-07-31" },
+    ];
+
+    function extremeOf(row) {
+      if (row.percentile >= 90) return "high";
+      if (row.percentile <= 10) return "low";
+      if (row.percentile >= 80) return "highish";
+      if (row.percentile <= 20) return "lowish";
+      return "mid";
+    }
+    function tagInfo(row) {
+      const e = extremeOf(row);
+      if (row.fuse && (e === "high" || e === "low")) return { cls: "tag-both", text: e === "high" ? "高位·加速" : "低位·加速" };
+      if (row.fuse) return { cls: "tag-fuse", text: "速度异常" };
+      if (e === "high" || e === "highish") return { cls: "tag-high", text: e === "high" ? "历史高位" : "偏高位" };
+      if (e === "low" || e === "lowish") return { cls: "tag-low", text: e === "low" ? "历史低位" : "偏低位" };
+      return { cls: "tag-fuse", text: "中性", hide: true };
+    }
+    function fmtNum(n) {
+      if (Math.abs(n) >= 1000) return n.toLocaleString("zh-CN", { maximumFractionDigits: 1 });
+      return Number(n).toFixed(n % 1 ? 1 : 0);
+    }
+    function fmtPct(n, signed = true) {
+      const s = (signed && n > 0 ? "+" : "") + n.toFixed(1) + "%";
+      return s;
+    }
+
+    /* ========== State ========== */
+    const state = {
+      tab: "radar",
+      sector: "all",
+      metric: "all",
+      extreme: "all",
+      window: "5",
+      search: "",
+      sort: { key: "percentile", dir: "desc" },
+      selectedId: null,
+      checked: new Set(),
+      subscribed: new Set(),
+      compareTpl: "black",
+      compareMetric: "库存",
+      compareMode: "percentile",
+      compareSelected: new Set(CHAINS.black.symbols),
+    };
+
+    /* ========== Helpers ========== */
+    function toast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.remove("show"), 2200);
+    }
+    function setStatus(msg) {
+      document.getElementById("statusMsg").textContent = msg;
+    }
+
+    function filteredRows() {
+      let rows = RAW.slice();
+      if (state.tab === "fuse") rows = rows.filter(r => r.fuse);
+      if (state.sector !== "all") rows = rows.filter(r => r.sector === state.sector);
+      if (state.metric !== "all") rows = rows.filter(r => r.metric === state.metric);
+      if (state.extreme === "high") rows = rows.filter(r => r.percentile >= 80);
+      if (state.extreme === "low") rows = rows.filter(r => r.percentile <= 20);
+      if (state.tab === "radar" && state.extreme === "all") {
+        // radar default: show extremes + near extremes for demo density; still ok
+        rows = rows.filter(r => r.percentile >= 80 || r.percentile <= 20 || r.fuse);
+      }
+      if (state.search.trim()) {
+        const q = state.search.trim();
+        rows = rows.filter(r => (r.symbol + r.metric + r.sector).includes(q));
+      }
+      const { key, dir } = state.sort;
+      rows.sort((a, b) => {
+        let av = a[key], bv = b[key];
+        if (key === "percentile") {
+          // extreme degree: distance from 50
+          av = Math.abs(a.percentile - 50);
+          bv = Math.abs(b.percentile - 50);
+        }
+        if (key === "wow") { av = Math.abs(a.wow); bv = Math.abs(b.wow); }
+        return dir === "desc" ? bv - av : av - bv;
+      });
+      return rows;
+    }
+
+    function sparklinePath(seed, w = 72, h = 22) {
+      const pts = [];
+      let v = 0.5;
+      for (let i = 0; i < 24; i++) {
+        v += Math.sin(seed * 0.7 + i * 0.45) * 0.08 + ((seed * (i + 3)) % 7 - 3) * 0.01;
+        v = Math.max(0.08, Math.min(0.92, v));
+        pts.push([ (i / 23) * w, h - v * h ]);
+      }
+      return pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
+    }
+
+    /* ========== Render table ========== */
+    function renderTable() {
+      const rows = filteredRows();
+      const tb = document.getElementById("tableBody");
+      tb.innerHTML = rows.map(r => {
+        const tag = tagInfo(r);
+        const e = extremeOf(r);
+        const fillCls = e === "high" || e === "highish" ? "high" : e === "low" || e === "lowish" ? "low" : "mid";
+        const selected = state.selectedId === r.id ? "selected" : "";
+        const checked = state.checked.has(r.id) ? "checked" : "";
+        const subOn = state.subscribed.has(r.id) ? "on" : "";
+        return `<tr class="${selected} ${checked}" data-id="${r.id}">
+          <td class="checkbox-col"><input type="checkbox" class="row-check" data-id="${r.id}" ${state.checked.has(r.id) ? "checked" : ""} /></td>
+          <td><div class="symbol"><span class="symbol-code">${r.symbol}</span></div></td>
+          <td><span class="sector-tag">${r.sector}</span></td>
+          <td>${r.metric}</td>
+          <td>${tag.hide ? "—" : `<span class="tag ${tag.cls}">${tag.text}</span>`}</td>
+          <td class="num">${fmtNum(r.value)} <span style="color:var(--text-muted);font-size:11px">${r.unit}</span></td>
+          <td>
+            <div class="pct-bar">
+              <div class="pct-track"><div class="pct-fill ${fillCls}" style="width:${r.percentile}%"></div></div>
+              <span class="pct-val">P${r.percentile}</span>
+            </div>
+          </td>
+          <td class="num ${r.wow > 0 ? "chg-up" : r.wow < 0 ? "chg-down" : ""}">${fmtPct(r.wow)}</td>
+          <td class="num ${r.yoy > 0 ? "chg-up" : r.yoy < 0 ? "chg-down" : ""}">${fmtPct(r.yoy)}</td>
+          <td><svg class="spark" viewBox="0 0 72 22"><path d="${sparklinePath(r.id + r.percentile)}" fill="none" stroke="${r.percentile >= 50 ? "#e85d4c" : "#2fbf71"}" stroke-width="1.5"/></svg></td>
+          <td>
+            <div class="row-actions">
+              <button class="icon-btn ${subOn}" data-act="sub" data-id="${r.id}" title="订阅">★</button>
+              <button class="icon-btn" data-act="cmp" data-id="${r.id}" title="对比">⇄</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join("");
+
+      document.getElementById("countRadar").textContent = RAW.filter(r => r.percentile >= 80 || r.percentile <= 20).length;
+      document.getElementById("countFuse").textContent = RAW.filter(r => r.fuse).length;
+      document.getElementById("resultMeta").textContent = `共 ${rows.length} 条 · 窗口近${state.window}年`;
+      document.getElementById("btnAddCompare").disabled = state.checked.size === 0;
+      document.getElementById("btnAddCompare").textContent = `加入对比 (${state.checked.size})`;
+
+      if (state.selectedId) {
+        const still = rows.find(r => r.id === state.selectedId);
+        if (!still && rows[0]) selectRow(rows[0].id);
+        else if (still) renderDetail(still);
+      } else if (rows[0]) {
+        selectRow(rows[0].id);
+      }
+    }
+
+    function selectRow(id) {
+      state.selectedId = id;
+      document.querySelectorAll("#tableBody tr").forEach(tr => {
+        tr.classList.toggle("selected", Number(tr.dataset.id) === id);
+      });
+      const row = RAW.find(r => r.id === id);
+      if (row) renderDetail(row);
+    }
+
+    function renderDetail(r) {
+      document.getElementById("detailEmpty").style.display = "none";
+      const body = document.getElementById("detailBody");
+      body.style.display = "flex";
+      const tag = tagInfo(r);
+      document.getElementById("dTitle").textContent = `${r.symbol} · ${r.metric}`;
+      const dTag = document.getElementById("dTag");
+      dTag.className = "tag " + tag.cls;
+      dTag.textContent = tag.hide ? "中性区间" : tag.text;
+      document.getElementById("dValue").textContent = `${fmtNum(r.value)} ${r.unit}`;
+      document.getElementById("dPct").textContent = `P${r.percentile}`;
+      document.getElementById("dWindow").textContent = `近${state.window}年`;
+      document.getElementById("dUpdated").textContent = r.updated;
+      document.getElementById("dSource").textContent = r.source;
+      const wow = document.getElementById("dWow");
+      wow.textContent = fmtPct(r.wow);
+      wow.style.color = r.wow > 0 ? "var(--up)" : r.wow < 0 ? "var(--down)" : "var(--text)";
+      const yoy = document.getElementById("dYoy");
+      yoy.textContent = fmtPct(r.yoy);
+      yoy.style.color = r.yoy > 0 ? "var(--up)" : r.yoy < 0 ? "var(--down)" : "var(--text)";
+      document.getElementById("dStreak").textContent = r.streak ? `${r.streak} 周` : "—";
+
+      drawDetailChart(r);
+
+      const peers = RAW.filter(x => x.sector === r.sector && x.metric === r.metric && x.id !== r.id)
+        .sort((a, b) => Math.abs(b.percentile - 50) - Math.abs(a.percentile - 50))
+        .slice(0, 4);
+      const peerList = document.getElementById("peerList");
+      if (!peers.length) {
+        peerList.innerHTML = `<div style="color:var(--text-muted);font-size:12px">同板块同指标暂无其他样本</div>`;
+      } else {
+        peerList.innerHTML = peers.map(p => {
+          const t = tagInfo(p);
+          return `<div class="peer" data-id="${p.id}">
+            <span class="name">${p.symbol}</span>
+            <span class="pct-val">P${p.percentile}</span>
+            ${t.hide ? "" : `<span class="tag ${t.cls}">${t.text}</span>`}
+          </div>`;
+        }).join("");
+      }
+    }
+
+    function drawDetailChart(r) {
+      const canvas = document.getElementById("detailChart");
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+      const w = rect.width, h = rect.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const pad = { t: 12, r: 12, b: 22, l: 36 };
+      const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
+
+      // band P10-P90
+      ctx.fillStyle = "rgba(61,139,253,0.08)";
+      ctx.fillRect(pad.l, pad.t + ph * 0.1, pw, ph * 0.8);
+
+      ctx.strokeStyle = "#2c3848";
+      ctx.lineWidth = 1;
+      [0.1, 0.5, 0.9].forEach(p => {
+        const y = pad.t + ph * (1 - p);
+        ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + pw, y); ctx.stroke();
+        ctx.fillStyle = "#6b7c8f";
+        ctx.font = "10px sans-serif";
+        ctx.fillText("P" + Math.round(p * 100), 4, y + 3);
+      });
+
+      // series
+      const n = 60;
+      const pts = [];
+      let v = 0.4 + (r.percentile / 100) * 0.2;
+      for (let i = 0; i < n; i++) {
+        const target = r.percentile / 100;
+        v = v * 0.9 + (0.25 + Math.sin(i / 6 + r.id) * 0.15 + (i / n) * (target - 0.25)) * 0.1;
+        v += Math.sin(i * 0.35 + r.id) * 0.03;
+        v = Math.max(0.02, Math.min(0.98, v));
+        pts.push(v);
+      }
+      pts[n - 1] = r.percentile / 100;
+
+      ctx.beginPath();
+      pts.forEach((v, i) => {
+        const x = pad.l + (i / (n - 1)) * pw;
+        const y = pad.t + (1 - v) * ph;
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      });
+      ctx.strokeStyle = r.percentile >= 50 ? "#e85d4c" : "#2fbf71";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // current point
+      const cx = pad.l + pw, cy = pad.t + (1 - pts[n - 1]) * ph;
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = "#9aabbd";
+      ctx.font = "10px sans-serif";
+      ctx.fillText("近" + state.window + "年", pad.l, h - 6);
+      ctx.fillText("今", w - 20, h - 6);
+    }
+
+    /* ========== Compare ========== */
+    function activateCompareFromSelection() {
+      const rows = [...state.checked].map(id => RAW.find(r => r.id === id)).filter(Boolean);
+      if (!rows.length) return;
+      const sector = rows[0].sector;
+      const metric = rows[0].metric;
+      state.compareMetric = metric;
+      document.getElementById("compareMetric").value = ["库存","开工率","存栏"].includes(metric) ? metric : "库存";
+      // find tpl or custom
+      let found = null;
+      for (const [k, v] of Object.entries(CHAINS)) {
+        if (v.sector === sector) { found = k; break; }
+      }
+      state.compareTpl = found || "black";
+      document.querySelectorAll(".tpl").forEach(el => el.classList.toggle("active", el.dataset.tpl === state.compareTpl));
+      state.compareSelected = new Set(rows.map(r => r.symbol));
+      // also include chain peers of same metric if space
+      if (found) {
+        CHAINS[found].symbols.forEach(s => {
+          if (state.compareSelected.size < 6) state.compareSelected.add(s);
+        });
+      }
+      switchTab("compare");
+      toast(`已带入 ${rows.length} 个品种进入对比`);
+    }
+
+    function renderCompareChecks() {
+      const tpl = CHAINS[state.compareTpl];
+      const pool = RAW.filter(r => r.sector === tpl.sector && r.metric === state.compareMetric);
+      // ensure symbols from chain appear even if metric missing — use closest
+      const symbols = [...new Set([...tpl.symbols, ...pool.map(r => r.symbol)])];
+      const box = document.getElementById("compareChecks");
+      box.innerHTML = symbols.map(sym => {
+        const on = state.compareSelected.has(sym);
+        return `<label class="check-item ${on ? "on" : ""}">
+          <input type="checkbox" data-sym="${sym}" ${on ? "checked" : ""} />
+          ${sym}
+        </label>`;
+      }).join("");
+    }
+
+    function renderCompare() {
+      renderCompareChecks();
+      const metric = state.compareMetric;
+      const selected = [...state.compareSelected].slice(0, 6);
+      const rows = selected.map(sym => {
+        return RAW.find(r => r.symbol === sym && r.metric === metric)
+          || RAW.find(r => r.symbol === sym)
+          || null;
+      }).filter(Boolean);
+
+      document.getElementById("compareChartTitle").textContent =
+        `${CHAINS[state.compareTpl].name} · ${metric}${state.compareMode === "percentile" ? "分位数" : state.compareMode === "yoy" ? "同比" : "绝对值"}对比`;
+
+      const legend = document.getElementById("compareLegend");
+      legend.innerHTML = rows.map((r, i) =>
+        `<span><i style="background:${COLORS[i % COLORS.length]}"></i>${r.symbol}</span>`
+      ).join("");
+
+      const tb = document.getElementById("compareTableBody");
+      tb.innerHTML = rows.map(r => {
+        const t = tagInfo(r);
+        return `<tr>
+          <td>${r.symbol}</td>
+          <td class="num">${fmtNum(r.value)} ${r.unit}</td>
+          <td class="num">P${r.percentile}</td>
+          <td class="num ${r.wow > 0 ? "chg-up" : "chg-down"}">${fmtPct(r.wow)}</td>
+          <td>${t.hide ? "—" : `<span class="tag ${t.cls}">${t.text}</span>`}</td>
+        </tr>`;
+      }).join("");
+
+      drawCompareChart(rows);
+    }
+
+    function drawCompareChart(rows) {
+      const canvas = document.getElementById("compareChart");
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+      const w = rect.width, h = rect.height;
+      ctx.clearRect(0, 0, w, h);
+      const pad = { t: 16, r: 16, b: 28, l: 40 };
+      const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
+
+      ctx.strokeStyle = "#2c3848";
+      ctx.fillStyle = "#6b7c8f";
+      ctx.font = "10px sans-serif";
+      for (let i = 0; i <= 4; i++) {
+        const y = pad.t + (ph * i) / 4;
+        ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + pw, y); ctx.stroke();
+        const label = state.compareMode === "percentile"
+          ? String(100 - i * 25)
+          : state.compareMode === "yoy"
+            ? String(20 - i * 10)
+            : "";
+        if (label !== "") ctx.fillText(label, 8, y + 3);
+      }
+
+      const n = 48;
+      rows.forEach((r, idx) => {
+        ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+          let v;
+          if (state.compareMode === "percentile") {
+            v = 0.3 + Math.sin(i / 5 + r.id) * 0.15 + (i / n) * (r.percentile / 100 - 0.3);
+            v = Math.max(0.02, Math.min(0.98, v));
+            if (i === n - 1) v = r.percentile / 100;
+          } else if (state.compareMode === "yoy") {
+            const y = (Math.sin(i / 4 + r.id) * 8 + (i / n) * r.yoy);
+            v = (y + 20) / 40;
+            if (i === n - 1) v = (r.yoy + 20) / 40;
+          } else {
+            v = 0.2 + ((r.percentile / 100) * 0.5) + Math.sin(i / 6 + idx) * 0.1;
+          }
+          const x = pad.l + (i / (n - 1)) * pw;
+          const y = pad.t + (1 - v) * ph;
+          i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        }
+        ctx.strokeStyle = COLORS[idx % COLORS.length];
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+
+      ctx.fillStyle = "#9aabbd";
+      ctx.fillText("时间 →", pad.l, h - 8);
+      if (state.compareMode === "percentile") ctx.fillText("分位", 8, pad.t + 8);
+      if (state.compareMode === "yoy") ctx.fillText("同比%", 4, pad.t + 8);
+      if (state.compareMode === "abs") {
+        ctx.fillText("示意分面（原型）", pad.l + pw / 2 - 40, pad.t + 8);
+      }
+    }
+
+    /* ========== Tabs ========== */
+    function switchTab(tab) {
+      state.tab = tab;
+      document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === tab));
+      const radar = document.getElementById("radarView");
+      const compare = document.getElementById("compareView");
+      if (tab === "compare") {
+        radar.classList.add("hidden");
+        compare.classList.add("active");
+        document.getElementById("compareMetric").value = state.compareMetric;
+        renderCompare();
+        setStatus("产业链对比");
+      } else {
+        radar.classList.remove("hidden");
+        compare.classList.remove("active");
+        // reset extreme filter UX slightly for fuse
+        renderTable();
+        setStatus(tab === "fuse" ? "速度异常 · 引线" : "极端雷达");
+        requestAnimationFrame(() => {
+          if (state.selectedId) {
+            const r = RAW.find(x => x.id === state.selectedId);
+            if (r) drawDetailChart(r);
+          }
+        });
+      }
+    }
+
+    /* ========== Events ========== */
+    document.querySelectorAll(".tab").forEach(t => {
+      t.addEventListener("click", () => switchTab(t.dataset.tab));
+    });
+
+    document.getElementById("filterSector").addEventListener("change", e => {
+      state.sector = e.target.value; renderTable();
+    });
+    document.getElementById("filterMetric").addEventListener("change", e => {
+      state.metric = e.target.value; renderTable();
+    });
+    document.getElementById("filterWindow").addEventListener("change", e => {
+      state.window = e.target.value;
+      // demo: nudge percentiles slightly by window
+      renderTable();
+      toast(`已切换历史窗口：近${state.window}年`);
+    });
+    document.getElementById("filterSearch").addEventListener("input", e => {
+      state.search = e.target.value; renderTable();
+    });
+
+    document.getElementById("extremeChips").addEventListener("click", e => {
+      const btn = e.target.closest(".chip");
+      if (!btn) return;
+      state.extreme = btn.dataset.extreme;
+      document.querySelectorAll("#extremeChips .chip").forEach(c => {
+        c.classList.remove("on-all", "on-high", "on-low");
+      });
+      btn.classList.add(state.extreme === "high" ? "on-high" : state.extreme === "low" ? "on-low" : "on-all");
+      renderTable();
+    });
+
+    document.getElementById("tableBody").addEventListener("click", e => {
+      const peerIgnore = e.target.closest(".row-check");
+      const act = e.target.closest("[data-act]");
+      if (act) {
+        const id = Number(act.dataset.id);
+        if (act.dataset.act === "sub") {
+          if (state.subscribed.has(id)) state.subscribed.delete(id);
+          else state.subscribed.add(id);
+          const r = RAW.find(x => x.id === id);
+          toast(state.subscribed.has(id) ? `已订阅：${r.symbol} ${r.metric}` : `已取消订阅：${r.symbol} ${r.metric}`);
+          renderTable();
+          return;
+        }
+        if (act.dataset.act === "cmp") {
+          state.checked.add(id);
+          activateCompareFromSelection();
+          return;
+        }
+      }
+      if (peerIgnore) return;
+      const tr = e.target.closest("tr[data-id]");
+      if (tr) selectRow(Number(tr.dataset.id));
+    });
+
+    document.getElementById("tableBody").addEventListener("change", e => {
+      if (e.target.classList.contains("row-check")) {
+        const id = Number(e.target.dataset.id);
+        if (e.target.checked) state.checked.add(id);
+        else state.checked.delete(id);
+        renderTable();
+      }
+    });
+
+    document.getElementById("checkAll").addEventListener("change", e => {
+      const rows = filteredRows();
+      if (e.target.checked) rows.forEach(r => state.checked.add(r.id));
+      else rows.forEach(r => state.checked.delete(r.id));
+      renderTable();
+    });
+
+    document.querySelectorAll("th.sortable").forEach(th => {
+      th.addEventListener("click", () => {
+        const key = th.dataset.sort;
+        if (state.sort.key === key) state.sort.dir = state.sort.dir === "desc" ? "asc" : "desc";
+        else { state.sort.key = key; state.sort.dir = "desc"; }
+        renderTable();
+      });
+    });
+
+    document.getElementById("peerList").addEventListener("click", e => {
+      const peer = e.target.closest(".peer");
+      if (peer) selectRow(Number(peer.dataset.id));
+    });
+
+    document.getElementById("btnAddCompare").addEventListener("click", activateCompareFromSelection);
+    document.getElementById("btnDetailCompare").addEventListener("click", () => {
+      if (state.selectedId) {
+        state.checked.clear();
+        state.checked.add(state.selectedId);
+        activateCompareFromSelection();
+      }
+    });
+    document.getElementById("btnDetailSub").addEventListener("click", () => {
+      if (!state.selectedId) return;
+      state.subscribed.add(state.selectedId);
+      const r = RAW.find(x => x.id === state.selectedId);
+      toast(`已订阅阈值：${r.symbol} ${r.metric} 进入 P90/P10 或速度异常时推送`);
+      renderTable();
+    });
+
+    document.getElementById("btnExport").addEventListener("click", () => toast("原型：将导出当前筛选结果为 Excel"));
+    document.getElementById("btnSubscribeAll").addEventListener("click", () => toast("原型：已订阅当前筛选条件下的新极端出现"));
+    document.getElementById("btnRefresh").addEventListener("click", () => {
+      setStatus("刷新中…");
+      setTimeout(() => { renderTable(); setStatus("数据已更新 " + new Date().toLocaleTimeString()); toast("数据已刷新"); }, 400);
+    });
+
+    document.querySelectorAll(".tpl").forEach(btn => {
+      btn.addEventListener("click", () => {
+        state.compareTpl = btn.dataset.tpl;
+        document.querySelectorAll(".tpl").forEach(b => b.classList.toggle("active", b === btn));
+        state.compareSelected = new Set(CHAINS[state.compareTpl].symbols);
+        if (state.compareTpl === "hog") state.compareMetric = "存栏";
+        else if (state.compareMetric === "存栏") state.compareMetric = "库存";
+        document.getElementById("compareMetric").value = state.compareMetric;
+        renderCompare();
+      });
+    });
+
+    document.getElementById("compareMetric").addEventListener("change", e => {
+      state.compareMetric = e.target.value;
+      renderCompare();
+    });
+
+    document.getElementById("compareChecks").addEventListener("change", e => {
+      const sym = e.target.dataset.sym;
+      if (!sym) return;
+      if (e.target.checked) {
+        if (state.compareSelected.size >= 6) {
+          e.target.checked = false;
+          toast("最多对比 6 个品种");
+          return;
+        }
+        state.compareSelected.add(sym);
+      } else {
+        state.compareSelected.delete(sym);
+      }
+      renderCompare();
+    });
+
+    document.querySelectorAll(".mode-switch .chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        state.compareMode = chip.dataset.mode;
+        document.querySelectorAll(".mode-switch .chip").forEach(c => c.classList.toggle("on", c === chip));
+        renderCompare();
+      });
+    });
+
+    document.getElementById("btnSaveTpl").addEventListener("click", () => toast("原型：已保存为我的对比模板"));
+
+    document.querySelectorAll(".rail-item").forEach(item => {
+      item.addEventListener("click", () => {
+        document.querySelectorAll(".rail-item").forEach(i => i.classList.remove("active"));
+        item.classList.add("active");
+        if (!item.classList.contains("active")) return;
+        toast("原型仅实现「基本面 · 极端雷达」模块");
+      });
+    });
+
+    window.addEventListener("resize", () => {
+      if (state.tab === "compare") renderCompare();
+      else if (state.selectedId) {
+        const r = RAW.find(x => x.id === state.selectedId);
+        if (r) drawDetailChart(r);
+      }
+    });
+
+    // init
+    renderTable();
+  </script>
+</body>
+</html>
