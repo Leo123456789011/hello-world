@@ -319,13 +319,17 @@
 
     .tag {
       display: inline-flex;
-      align-items: center;
-      height: 20px;
-      padding: 0 7px;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      min-height: 20px;
+      padding: 2px 7px;
       border-radius: 3px;
       font-size: 11px;
       font-weight: 600;
       white-space: nowrap;
+      position: relative;
+      cursor: help;
     }
     .tag-high { background: var(--high-soft); color: #ff8f82; }
     .tag-low { background: var(--low-soft); color: #5fd992; }
@@ -594,6 +598,53 @@
     .hint b { color: var(--accent); }
 
     .checkbox-col { width: 28px; text-align: center; }
+
+    .tag-sub {
+      display: block;
+      font-size: 10px;
+      font-weight: 500;
+      opacity: 0.85;
+      margin-top: 1px;
+      letter-spacing: 0;
+    }
+    .status-cell { line-height: 1.25; }
+    .method-bar {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 8px 14px;
+      background: #121820;
+      border-bottom: 1px solid var(--border-soft);
+      color: var(--text-muted);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+    .method-bar strong { color: var(--text-secondary); font-weight: 600; }
+    .method-bar code {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: #9ec1ff;
+      background: rgba(61,139,253,.1);
+      padding: 0 4px;
+      border-radius: 2px;
+    }
+    .method-legends {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-left: auto;
+      justify-content: flex-end;
+    }
+    .method-legends .tag { height: auto; padding: 3px 7px; }
+    .detail-method {
+      margin-top: 8px;
+      padding: 8px 10px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .detail-method b { color: var(--text-secondary); }
   </style>
 </head>
 <body>
@@ -617,7 +668,7 @@
     </header>
 
     <div class="toolbar">
-      <div class="crumb">基本面 / <strong>极端雷达</strong></div>
+      <div class="crumb">基本面 / <strong>分位极端雷达</strong></div>
       <div class="toolbar-actions">
         <button class="btn" id="btnExport">导出 Excel</button>
         <button class="btn" id="btnSubscribeAll">订阅当前筛选</button>
@@ -637,11 +688,11 @@
         <div class="module-header">
           <div class="module-title-row">
             <div class="module-title">基本面极端雷达</div>
-            <div class="module-desc">扫描库存 / 产能 / 开工率等指标的历史高位、低位与异常变化速度</div>
+            <div class="module-desc">按历史分位（Percentile）与环比异常扫描库存 / 产能 / 开工率等指标</div>
           </div>
           <div class="tabs" role="tablist">
-            <button class="tab active" data-tab="radar">极端雷达 <span class="count" id="countRadar">0</span></button>
-            <button class="tab" data-tab="fuse">速度异常 · 引线 <span class="count" id="countFuse">0</span></button>
+            <button class="tab active" data-tab="radar">分位极端 <span class="count" id="countRadar">0</span></button>
+            <button class="tab" data-tab="fuse">环比异常 <span class="count" id="countFuse">0</span></button>
             <button class="tab" data-tab="compare">产业链对比</button>
           </div>
         </div>
@@ -649,7 +700,21 @@
         <!-- RADAR + FUSE VIEW -->
         <div class="radar-view" id="radarView">
           <div class="hint">
-            <b>原型说明：</b>点击表格行查看右侧详情；勾选多行后可「加入对比」；切换顶部 Tab 体验引线与产业链对比。数据为演示样本。
+            <b>口径：</b>标签基于选定窗口内的<strong>历史分位</strong>与<strong>周环比分位/Z-score</strong>生成，不是「对比历史中位数」。中位数仅为 P50 参考线。
+          </div>
+          <div class="method-bar">
+            <div>
+              <strong>打标规则</strong>（可配置阈值）<br />
+              水平：<code>分位 ≥ P90</code> → 分位高位；<code>≤ P10</code> → 分位低位；创窗口新高/新低优先标注。<br />
+              速度：<code>|周环比|</code> 达近 N 年变化幅度 <code>P90</code> 或 <code>|Z|≥2</code> → 环比异常。<br />
+              组合：高分位且边际继续抬升 → <code>高分位·边际加速</code>。
+            </div>
+            <div class="method-legends">
+              <span class="tag tag-high">分位高位<span class="tag-sub">≥P90</span></span>
+              <span class="tag tag-low">分位低位<span class="tag-sub">≤P10</span></span>
+              <span class="tag tag-both">高分位·边际加速<span class="tag-sub">P90+ ∩ 环比异常</span></span>
+              <span class="tag tag-fuse">环比异常<span class="tag-sub">变化率极端</span></span>
+            </div>
           </div>
           <div class="filters" id="filterBar">
             <div class="field">
@@ -684,9 +749,9 @@
               </select>
             </div>
             <div class="chip-group" id="extremeChips">
-              <button class="chip on-all" data-extreme="all">全部极端</button>
-              <button class="chip" data-extreme="high">历史高位</button>
-              <button class="chip" data-extreme="low">历史低位</button>
+              <button class="chip on-all" data-extreme="all">全部分位极端</button>
+              <button class="chip" data-extreme="high">分位高位 ≥P90</button>
+              <button class="chip" data-extreme="low">分位低位 ≤P10</button>
             </div>
             <div class="field">
               <label>搜索</label>
@@ -707,7 +772,7 @@
                     <th>品种</th>
                     <th>板块</th>
                     <th>指标</th>
-                    <th>状态</th>
+                    <th>分位状态</th>
                     <th class="num sortable" data-sort="value">当前值</th>
                     <th class="sortable" data-sort="percentile">分位数</th>
                     <th class="num sortable" data-sort="wow">周环比</th>
@@ -732,11 +797,12 @@
                   </h2>
                   <div class="detail-meta">
                     <span>当前值 <b id="dValue">—</b></span>
-                    <span>分位 <b id="dPct">—</b></span>
+                    <span>历史分位 <b id="dPct">—</b></span>
                     <span>窗口 <b id="dWindow">近5年</b></span>
                     <span>更新 <b id="dUpdated">2026-08-01</b></span>
                     <span>来源 <b id="dSource">红期产业库</b></span>
                   </div>
+                  <div class="detail-method" id="dMethod">—</div>
                 </div>
                 <div class="kpi-row">
                   <div class="kpi"><div class="k">周环比</div><div class="v" id="dWow">—</div></div>
@@ -766,7 +832,7 @@
         <!-- COMPARE VIEW -->
         <div class="compare-view" id="compareView">
           <div class="hint">
-            <b>产业链对比：</b>优先用预设模板；也可勾选同板块品种。默认用<strong>分位数</strong>对齐量纲，避免万吨与百分比硬叠。
+            <b>产业链对比：</b>优先用预设模板；也可勾选同板块品种。默认用<strong>历史分位数</strong>对齐量纲（Percentile alignment），避免万吨与百分比硬叠。
           </div>
           <div class="template-bar">
             <span class="label">预设模板</span>
@@ -806,9 +872,9 @@
                   <tr>
                     <th>品种</th>
                     <th class="num">当前值</th>
-                    <th class="num">分位</th>
+                    <th class="num">历史分位</th>
                     <th class="num">周环比</th>
-                    <th>状态</th>
+                    <th>分位状态</th>
                   </tr>
                 </thead>
                 <tbody id="compareTableBody"></tbody>
@@ -822,7 +888,7 @@
     <footer class="statusbar">
       <span>红期终端 原型 v0.1</span>
       <span class="sep"></span>
-      <span>口径：分位 = 当前值在选定历史窗口内的百分位；高位 ≥P90，低位 ≤P10</span>
+      <span>口径：历史分位 Percentile（非「比中位数」）；高位 ≥P90，低位 ≤P10；环比异常 = |WoW| 分位极端或 |Z|≥2</span>
       <span class="sep"></span>
       <span id="statusMsg">就绪</span>
     </footer>
@@ -879,13 +945,74 @@
       if (row.percentile <= 20) return "lowish";
       return "mid";
     }
+    /** Professional terminal labeling: percentile level × WoW velocity */
     function tagInfo(row) {
       const e = extremeOf(row);
-      if (row.fuse && (e === "high" || e === "low")) return { cls: "tag-both", text: e === "high" ? "高位·加速" : "低位·加速" };
-      if (row.fuse) return { cls: "tag-fuse", text: "速度异常" };
-      if (e === "high" || e === "highish") return { cls: "tag-high", text: e === "high" ? "历史高位" : "偏高位" };
-      if (e === "low" || e === "lowish") return { cls: "tag-low", text: e === "low" ? "历史低位" : "偏低位" };
-      return { cls: "tag-fuse", text: "中性", hide: true };
+      const p = `P${row.percentile}`;
+      if (row.fuse && e === "high") {
+        return {
+          cls: "tag-both",
+          text: "高分位·边际加速",
+          sub: `${p} ∩ 环比异常`,
+          title: `近${state.window}年水平分位 ${p}（≥P90）且周环比处于历史变化幅度极端区间（|WoW|≥P90 或 |Z|≥2）`,
+          formal: `Percentile ${p} · Velocity outlier`,
+        };
+      }
+      if (row.fuse && e === "low") {
+        return {
+          cls: "tag-both",
+          text: "低分位·边际加速",
+          sub: `${p} ∩ 环比异常`,
+          title: `近${state.window}年水平分位 ${p}（≤P10）且周环比处于历史变化幅度极端区间`,
+          formal: `Percentile ${p} · Velocity outlier`,
+        };
+      }
+      if (row.fuse) {
+        return {
+          cls: "tag-fuse",
+          text: "环比异常",
+          sub: `变化率极端 · ${p}`,
+          title: `周环比绝对值达到近${state.window}年变化幅度 P90 以上，或 |Z-score|≥2；当前水平分位为 ${p}`,
+          formal: `WoW velocity outlier · Level ${p}`,
+        };
+      }
+      if (e === "high") {
+        return {
+          cls: "tag-high",
+          text: "分位高位",
+          sub: `${p} · ≥P90`,
+          title: `当前值处于近${state.window}年历史分位 ${p}（阈值：≥P90，亦称历史分位高位 / upper-tail percentile）`,
+          formal: `Historical percentile ${p}`,
+        };
+      }
+      if (e === "low") {
+        return {
+          cls: "tag-low",
+          text: "分位低位",
+          sub: `${p} · ≤P10`,
+          title: `当前值处于近${state.window}年历史分位 ${p}（阈值：≤P10，亦称历史分位低位 / lower-tail percentile）`,
+          formal: `Historical percentile ${p}`,
+        };
+      }
+      if (e === "highish") {
+        return {
+          cls: "tag-high",
+          text: "分位偏高",
+          sub: `${p} · P80–P90`,
+          title: `近${state.window}年分位 ${p}，进入偏高区间但未达 P90 极端阈值`,
+          formal: `Elevated percentile ${p}`,
+        };
+      }
+      if (e === "lowish") {
+        return {
+          cls: "tag-low",
+          text: "分位偏低",
+          sub: `${p} · P10–P20`,
+          title: `近${state.window}年分位 ${p}，进入偏低区间但未达 P10 极端阈值`,
+          formal: `Depressed percentile ${p}`,
+        };
+      }
+      return { cls: "tag-fuse", text: "中性分位", sub: p, title: `近${state.window}年分位 ${p}，位于 P20–P80`, formal: p, hide: true };
     }
     function fmtNum(n) {
       if (Math.abs(n) >= 1000) return n.toLocaleString("zh-CN", { maximumFractionDigits: 1 });
@@ -982,7 +1109,7 @@
           <td><div class="symbol"><span class="symbol-code">${r.symbol}</span></div></td>
           <td><span class="sector-tag">${r.sector}</span></td>
           <td>${r.metric}</td>
-          <td>${tag.hide ? "—" : `<span class="tag ${tag.cls}">${tag.text}</span>`}</td>
+          <td class="status-cell">${tag.hide ? "—" : `<span class="tag ${tag.cls}" title="${tag.title}">${tag.text}<span class="tag-sub">${tag.sub}</span></span>`}</td>
           <td class="num">${fmtNum(r.value)} <span style="color:var(--text-muted);font-size:11px">${r.unit}</span></td>
           <td>
             <div class="pct-bar">
@@ -1034,7 +1161,14 @@
       document.getElementById("dTitle").textContent = `${r.symbol} · ${r.metric}`;
       const dTag = document.getElementById("dTag");
       dTag.className = "tag " + tag.cls;
-      dTag.textContent = tag.hide ? "中性区间" : tag.text;
+      dTag.title = tag.title || "";
+      dTag.innerHTML = tag.hide
+        ? `中性分位<span class="tag-sub">P${r.percentile}</span>`
+        : `${tag.text}<span class="tag-sub">${tag.sub}</span>`;
+      const methodEl = document.getElementById("dMethod");
+      if (methodEl) {
+        methodEl.innerHTML = `<b>专业口径</b>：${tag.formal || "—"}<br/>${tag.title || ""}<br/>说明：以历史分位（Percentile）刻画水平位置；中位数仅为 P50，不作为「高/低位」判定阈值。`;
+      }
       document.getElementById("dValue").textContent = `${fmtNum(r.value)} ${r.unit}`;
       document.getElementById("dPct").textContent = `P${r.percentile}`;
       document.getElementById("dWindow").textContent = `近${state.window}年`;
@@ -1062,7 +1196,7 @@
           return `<div class="peer" data-id="${p.id}">
             <span class="name">${p.symbol}</span>
             <span class="pct-val">P${p.percentile}</span>
-            ${t.hide ? "" : `<span class="tag ${t.cls}">${t.text}</span>`}
+            ${t.hide ? "" : `<span class="tag ${t.cls}" title="${t.title}">${t.text}<span class="tag-sub">${t.sub}</span></span>`}
           </div>`;
         }).join("");
       }
@@ -1197,7 +1331,7 @@
           <td class="num">${fmtNum(r.value)} ${r.unit}</td>
           <td class="num">P${r.percentile}</td>
           <td class="num ${r.wow > 0 ? "chg-up" : "chg-down"}">${fmtPct(r.wow)}</td>
-          <td>${t.hide ? "—" : `<span class="tag ${t.cls}">${t.text}</span>`}</td>
+          <td>${t.hide ? "—" : `<span class="tag ${t.cls}" title="${t.title}">${t.text}<span class="tag-sub">${t.sub}</span></span>`}</td>
         </tr>`;
       }).join("");
 
@@ -1282,7 +1416,7 @@
         compare.classList.remove("active");
         // reset extreme filter UX slightly for fuse
         renderTable();
-        setStatus(tab === "fuse" ? "速度异常 · 引线" : "极端雷达");
+        setStatus(tab === "fuse" ? "环比异常（Velocity outlier）" : "分位极端雷达（Percentile scan）");
         requestAnimationFrame(() => {
           if (state.selectedId) {
             const r = RAW.find(x => x.id === state.selectedId);
@@ -1390,7 +1524,7 @@
       if (!state.selectedId) return;
       state.subscribed.add(state.selectedId);
       const r = RAW.find(x => x.id === state.selectedId);
-      toast(`已订阅阈值：${r.symbol} ${r.metric} 进入 P90/P10 或速度异常时推送`);
+      toast(`已订阅阈值：${r.symbol} ${r.metric} 进入 ≥P90 / ≤P10 或环比异常时推送`);
       renderTable();
     });
 
