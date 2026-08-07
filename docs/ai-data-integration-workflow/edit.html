@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>可编辑原型文案 · 数据集成 AI 工作流</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #122028;
+      --muted: #4a5d68;
+      --line: #d5e0e6;
+      --bg: #f3f7f8;
+      --panel: #ffffff;
+      --teal: #0f6e6a;
+      --copper: #c46a2b;
+      --ok: #1f7a4d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Manrope", "Noto Serif SC", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(900px 420px at 0% 0%, #d9ece9, transparent 50%),
+        radial-gradient(700px 380px at 100% 0%, #f4e4d6, transparent 45%),
+        var(--bg);
+    }
+    .wrap { width: min(980px, calc(100% - 32px)); margin: 0 auto; padding: 36px 0 64px; }
+    h1 {
+      font-family: "Noto Serif SC", serif;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      margin: 0 0 8px;
+    }
+    .lede { color: var(--muted); line-height: 1.65; margin: 0 0 18px; max-width: 68ch; }
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px;
+      position: sticky; top: 0; z-index: 5;
+      padding: 10px 0;
+      background: linear-gradient(180deg, rgba(243,247,248,0.96), rgba(243,247,248,0.85));
+      backdrop-filter: blur(8px);
+    }
+    .btn {
+      border: 0; border-radius: 10px; padding: 10px 14px;
+      font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+      background: var(--teal); color: #fff;
+    }
+    .btn.secondary { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+    .btn.copper { background: var(--copper); }
+    .btn.ghost { background: #e7f2f1; color: var(--teal); }
+    .nav {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px;
+    }
+    @media (max-width: 720px) { .nav { grid-template-columns: 1fr; } }
+    .nav a {
+      text-decoration: none; color: inherit;
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: 12px; padding: 10px 12px; font-size: 13px;
+    }
+    .nav strong { display: block; margin-bottom: 2px; }
+    .nav span { color: var(--muted); font-size: 12px; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 10px 30px rgba(18,32,40,0.06);
+      scroll-margin-top: 72px;
+    }
+    .card-head {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 10px; margin-bottom: 10px; flex-wrap: wrap;
+    }
+    .card h2 {
+      font-family: "Noto Serif SC", serif;
+      font-size: 1.15rem; margin: 0;
+    }
+    .hint { font-size: 12px; color: var(--muted); }
+    textarea {
+      width: 100%;
+      min-height: 280px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font: inherit;
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: var(--ink);
+      background: #fbfcfd;
+      white-space: pre-wrap;
+    }
+    textarea:focus {
+      outline: 2px solid rgba(15,110,106,0.25);
+      border-color: var(--teal);
+      background: #fff;
+    }
+    .toast {
+      position: fixed; right: 18px; bottom: 18px;
+      background: var(--ink); color: #fff;
+      padding: 10px 14px; border-radius: 10px;
+      font-size: 13px; opacity: 0; transform: translateY(8px);
+      transition: .2s ease; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: none; }
+    .links { font-size: 13px; color: var(--muted); margin-top: 8px; }
+    .links a { color: var(--teal); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>可编辑原型文案</h1>
+    <p class="lede">每个节点都是可直接改的文本框。改完后点「复制本节点」，可贴进 PPT / PRD / 飞书 / 邮件。也可「复制全部」一次拿走。</p>
+    <div class="links">完整 Markdown 版：<a href="./prototypes-editable.md">prototypes-editable.md</a> · 可视化鱼骨图：<a href="./index.html">index.html</a></div>
+
+    <div class="toolbar">
+      <button class="btn copper" type="button" id="copyAll">复制全部文案</button>
+      <button class="btn secondary" type="button" id="resetAll">恢复默认示例</button>
+      <a class="btn ghost" href="./prototypes-editable.md">打开 Markdown</a>
+      <a class="btn secondary" href="./index.html">查看可视化原型</a>
+    </div>
+
+    <nav class="nav">
+      <a href="#e1"><strong>01 需求对话采集</strong><span>销售 AI 对话框</span></a>
+      <a href="#e2"><strong>02 智能初筛分流</strong><span>线索路由</span></a>
+      <a href="#e3"><strong>03 PM 类型判定</strong><span>集成 / 加工</span></a>
+      <a href="#e4"><strong>04 数据筛选平台</strong><span>销售自助筛选</span></a>
+      <a href="#e5"><strong>05 报价与出表</strong><span>价 + 表</span></a>
+      <a href="#e6"><strong>06 交付闭环底座</strong><span>审批与知识库</span></a>
+    </nav>
+
+    <section class="card" id="e1">
+      <div class="card-head">
+        <h2>01｜销售 AI 对话采集</h2>
+        <div>
+          <button class="btn secondary copy-one" type="button" data-target="t1">复制本节点</button>
+        </div>
+      </div>
+      <p class="hint">可直接改对话文案、识别结果、按钮文案</p>
+      <textarea id="t1" data-key="n1">【页面】数据集成 · 需求助手
+【标签】原型 · 对话采集
+
+【AI 开场白】
+你好，请用一句话描述客户需要什么数据。例如：甲醇市场价，即期一年。
+
+【销售输入】
+客户要甲醇的市场价，看即期，要最近一年的日度数据
+
+【AI 识别结果】
+已识别需求，请确认：
+- 商品：甲醇
+- 数据类型：市场价
+- 周期：即期 · 近1年
+- 频率：日度
+置信度 0.92 · 可提交或继续补充交割地/口径
+
+【补充输入】补充：要华东地区口径
+【按钮】提交
+
+【AI 介入要素】
+1. NER / 槽位抽取：商品、数据类型、频率、时间窗、交付形态
+2. 同义词归一：甲醇/MA、市场价/现货价 → 标准词典
+3. 澄清策略：缺槽位时只问 1–2 个关键问题
+4. 置信度门槛：高置信直接提交；低置信转人工确认
+
+【现状→AI后】
+现状：销售口语描述散乱，PM 反复理解需求并手工落表
+AI后：提交即带结构化标签，后续节点复用同一需求对象</textarea>
+    </section>
+
+    <section class="card" id="e2">
+      <div class="card-head">
+        <h2>02｜智能初筛分流</h2>
+        <button class="btn secondary copy-one" type="button" data-target="t2">复制本节点</button>
+      </div>
+      <p class="hint">可改路由建议、标签、分流选项</p>
+      <textarea id="t2" data-key="n2">【页面】线索初筛 · AI Route
+【线索号】CL-2026-0812
+
+【卡片标题】客户 A · 甲醇市场价需求
+【结构化标签】
+- 商品：甲醇
+- 类型：市场价
+- 周期：1年日度
+- 倾向：新签
+
+【AI 建议路由】
+数据类 · 优先走「数据集成」审核（匹配历史单 14 条，目录覆盖率 96%）
+
+【分流选项】
+A. 进入产品管理部 —— 数据项目，交 PM 确认集成/加工（默认）
+B. 转咨询非数据 —— 不属于标准数据目录
+
+【按钮】确认分流｜查看相似历史单
+
+【AI 介入要素】
+1. 项目类型分类：数据集成 / 数据加工 / 咨询非数据
+2. 历史相似单召回
+3. 缺失字段补全建议：客户主体、交付方式、新签/续签
+4. 红线规则：无法映射标准目录时标记「需人工深挖」
+
+【现状→AI后】
+现状：咨询人工判断项目类型，信息线下传递易丢
+AI后：自动挂标签并路由；非数据类提前分流，不占 PM 产能</textarea>
+    </section>
+
+    <section class="card" id="e3">
+      <div class="card-head">
+        <h2>03｜PM 类型判定</h2>
+        <button class="btn secondary copy-one" type="button" data-target="t3">复制本节点</button>
+      </div>
+      <p class="hint">PM 只判集成/加工的文案可在此改</p>
+      <textarea id="t3" data-key="n3">【页面】PM 工作台 · 判定
+【状态】待处理 3
+
+【卡片标题】确认需求 · 甲醇 / 市场价 / 即期1年
+【AI 推荐】
+数据集成 · 标准目录可覆盖「地区、规格、价格类型、日期」；未见多部门加工特征
+
+【判定选项】
+A. 数据集成 —— 开放销售筛选平台 · 甲醇+市场价（默认）
+B. 数据加工 —— 需项目经理拆分多部门任务
+
+【按钮】确认并开放筛选｜查看缺口字段
+
+【AI 介入要素】
+1. 路径推荐：目录覆盖、字段可配程度 →「集成优先」
+2. 风险提示：多部门、非标口径、定制衍生字段 → 倾向加工
+3. 证据面板：可映射字段、缺口字段、历史同类判定
+4. 一键动作：确认集成后自动开通销售筛选工作台
+
+【现状→AI后】
+现状：PM 既理解需求又制表，成为主瓶颈
+AI后：PM 决策从「做表」变为「看证据点一下」</textarea>
+    </section>
+
+    <section class="card" id="e4">
+      <div class="card-head">
+        <h2>04｜销售数据筛选平台</h2>
+        <button class="btn secondary copy-one" type="button" data-target="t4">复制本节点</button>
+      </div>
+      <p class="hint">目录、筛选项、字段表都可直接改</p>
+      <textarea id="t4" data-key="n4">【页面】销售端 · 筛选平台
+
+【左侧目录】
+- 甲醇 / 市场价（当前）
+- 甲醇 / 出厂价
+- 甲醇 / 库存
+- 乙烯 / 市场价
+
+【面包屑】数据集成 · 甲醇 · 市场价 · AI 已预填对话结果
+
+【筛选条件】
+- 地区：华东
+- 时间窗：近 1 年
+- 频率：日度
+
+【字段勾选】
+✅ 市场价｜口径：含税均价｜单位：元/吨｜更新：日
+✅ 地区｜口径：华东
+☐ 规格｜口径：优等品
+✅ 日期｜口径：自然日｜更新：日
+
+【AI 提示】建议补选「交割地」以提高报价精度
+【主按钮】生成报价与表格
+
+【AI 介入要素】
+1. 智能预填：根据对话槽位自动勾选默认项
+2. 字段助理：说明口径 / 单位 / 更新频率
+3. 组合推荐：同类客户常选「华东 + 日度 + 含税」
+4. 合法性校验：互斥条件、无数据区间提前告警
+
+【现状→AI后】
+现状：PM 做表 → 销售核对 → 不对再改，多轮线下循环
+AI后：销售所见即所得；PM 仅在异常/无目录时介入</textarea>
+    </section>
+
+    <section class="card" id="e5">
+      <div class="card-head">
+        <h2>05｜自动报价 + 线下交付表</h2>
+        <button class="btn secondary copy-one" type="button" data-target="t5">复制本节点</button>
+      </div>
+      <p class="hint">报价数字、表头、按钮文案可改</p>
+      <textarea id="t5" data-key="n5">【页面】方案产出 · Quote + Sheet
+【标签】新签
+
+【交付表格预览】甲醇市场价
+日期 | 地区 | 市场价 | 单位
+2025-08-01 | 华东 | 2,450 | 元/吨
+2025-08-02 | 华东 | 2,460 | 元/吨
+… | … | … | …
+
+【报价摘要】
+- 商品线：甲醇 · 市场价
+- 字段组合：4 项
+- 周期：即期 1 年 · 日度
+- 计价规则：标准目录价
+- 建议报价：¥ 36,000
+
+【按钮】下载线下表格｜发给客户确认｜提交审批
+
+【续签补充（可选）】
+续签：已按旧订单号复用方案，变更点如下：时间窗由「近1年」调整为「近2年」；其余字段无变化。
+
+【AI 介入要素】
+1. 计价引擎：字段数 × 周期 × 商品线折扣 / 续签规则
+2. 表格模板匹配：按历史线下表头自动落列与样例行
+3. 方案说明生成：给客户的非技术语言摘要
+4. 新签/续签分叉：续签按旧订单号复用并 diff 变更点
+
+【现状→AI后】
+现状：报价与表格依赖 PM 手工；续签也需线下通知改单
+AI后：筛选结束即出「价 + 表」；销售只做对错确认</textarea>
+    </section>
+
+    <section class="card" id="e6">
+      <div class="card-head">
+        <h2>06｜交付闭环 + 知识底座</h2>
+        <button class="btn secondary copy-one" type="button" data-target="t6">复制本节点</button>
+      </div>
+      <p class="hint">进度文案、知识树、反馈说明可改</p>
+      <textarea id="t6" data-key="n6">【页面】交付闭环 · Track
+【订单号】DRAFT-8891
+
+【进度步骤】
+1. ✅ 方案与报价已生成 · 完成
+2. ✅ OA 审批单已自动预填 · 完成
+3. 销售确认后提交审批 · 待确认
+4. 权限开通 / 合同签署 · 排队
+
+【知识本体片段】
+甲醇
+└ 市场价
+   ├ 地区 / 规格 / 日期
+   ├ 模板 T-Price-01
+   └ 价规 R-Std-A
+
+【反馈学习】
+近 30 日销售最常见改动：补选「交割地」。已提升该字段默认推荐权重。
+
+【加工分支留白】
+判定为加工时，仍走项目经理/分析师链路；AI 先做需求拆解草稿，不在本阶段替代。
+
+【AI 介入要素】
+1. OA 审批单自动填报：客户、方案、报价、附件表
+2. 开通与签约进度机器人：超时 / 驳回原因摘要
+3. 知识图谱：商品 → 数据类型 → 可筛字段 → 模板 → 价规
+4. 反馈闭环：销售改选项反哺推荐与词典
+
+【现状→AI后】
+现状：后半段仍大量线下通知；前半段缺少统一主数据
+AI后：后半段可确认化；前半段识别/筛选/出表共享同一底座</textarea>
+    </section>
+
+    <section class="card" id="pitch">
+      <div class="card-head">
+        <h2>附录｜评审口径（可直接念/贴）</h2>
+        <button class="btn secondary copy-one" type="button" data-target="t7">复制本节点</button>
+      </div>
+      <textarea id="t7" data-key="pitch" style="min-height:160px">我们先不动数据加工主链路，优先 AI 化数据集成：
+销售用对话说明需求，系统识别「商品 + 数据类型 + 周期」；
+PM 只确认走集成还是加工；
+若是集成，销售在对应目录下自己筛选；
+筛选完成后系统直接出报价和线下表，后续以确认和审批为主，不再让 PM 手工制 Excel。</textarea>
+    </section>
+  </div>
+
+  <div class="toast" id="toast">已复制到剪贴板</div>
+
+  <script>
+    const areas = [...document.querySelectorAll('textarea[data-key]')];
+    const defaults = Object.fromEntries(areas.map((el) => [el.dataset.key, el.value]));
+    const toast = document.getElementById('toast');
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toast.classList.remove('show'), 1600);
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('已复制到剪贴板');
+      } catch (e) {
+        const tmp = document.createElement('textarea');
+        tmp.value = text;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand('copy');
+        tmp.remove();
+        showToast('已复制到剪贴板');
+      }
+    }
+
+    function persist() {
+      const data = Object.fromEntries(areas.map((el) => [el.dataset.key, el.value]));
+      localStorage.setItem('ai-workflow-proto-copy', JSON.stringify(data));
+    }
+
+    function restore() {
+      try {
+        const raw = localStorage.getItem('ai-workflow-proto-copy');
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        areas.forEach((el) => {
+          if (typeof data[el.dataset.key] === 'string') el.value = data[el.dataset.key];
+        });
+      } catch (_) {}
+    }
+
+    areas.forEach((el) => el.addEventListener('input', persist));
+    restore();
+
+    document.querySelectorAll('.copy-one').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const el = document.getElementById(btn.dataset.target);
+        copyText(el.value.trim());
+      });
+    });
+
+    document.getElementById('copyAll').addEventListener('click', () => {
+      const all = areas.map((el, i) => {
+        const title = el.closest('.card').querySelector('h2').textContent.trim();
+        return `====================\n${title}\n====================\n${el.value.trim()}`;
+      }).join('\n\n');
+      copyText(all);
+    });
+
+    document.getElementById('resetAll').addEventListener('click', () => {
+      if (!confirm('恢复全部默认示例文案？当前编辑会被覆盖。')) return;
+      areas.forEach((el) => { el.value = defaults[el.dataset.key]; });
+      localStorage.removeItem('ai-workflow-proto-copy');
+      showToast('已恢复默认示例');
+    });
+  </script>
+</body>
+</html>

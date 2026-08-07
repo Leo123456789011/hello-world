@@ -1,6 +1,13 @@
 # 数据集成工作流 · AI 智能化鱼骨图与节点原型
 
-打开 [`index.html`](./index.html) 查看完整交互页（鱼骨图 + 6 个关键节点原型）。
+## 怎么用（优先看这两个）
+
+1. **可编辑 / 可复制文案（推荐）**  
+   - 在线编辑并一键复制：[`edit.html`](./edit.html)  
+   - 纯 Markdown 全文：[`prototypes-editable.md`](./prototypes-editable.md)
+
+2. **可视化鱼骨图 + 界面原型**  
+   - [`index.html`](./index.html)
 
 ## 目标
 
