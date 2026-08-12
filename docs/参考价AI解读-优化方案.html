@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>参考价 AI 解读 — 优化方案</title>
+  <style>
+    :root {
+      --ink: #1a2332;
+      --muted: #5a6577;
+      --line: #d8dee8;
+      --bg: #f3f5f8;
+      --card: #ffffff;
+      --accent: #0c6e6b;
+      --accent-soft: #e6f4f3;
+      --warn: #9a3412;
+      --warn-bg: #fff7ed;
+      --tag-bg: #eef2f7;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #d9eceb 0%, transparent 55%),
+        radial-gradient(900px 400px at 100% 0%, #e8edf5 0%, transparent 50%),
+        var(--bg);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .wrap {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    header.doc-head {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 28px 28px 22px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 0 rgba(26, 35, 50, 0.04);
+    }
+
+    header.doc-head .eyebrow {
+      color: var(--accent);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin: 0 0 8px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 28px;
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+    }
+
+    .note {
+      margin: 0;
+      padding: 12px 14px;
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      color: var(--muted);
+      font-size: 14px;
+      border-radius: 0 8px 8px 0;
+    }
+
+    nav.toc {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-bottom: 24px;
+    }
+
+    nav.toc h2 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    nav.toc ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    nav.toc a {
+      color: var(--ink);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+    }
+
+    nav.toc a:hover { border-bottom-color: var(--accent); color: var(--accent); }
+
+    section.block {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 26px 28px;
+      margin-bottom: 18px;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h3 {
+      margin: 22px 0 10px;
+      font-size: 17px;
+    }
+
+    h4 {
+      margin: 18px 0 8px;
+      font-size: 15px;
+      color: var(--accent);
+    }
+
+    p { margin: 0 0 12px; }
+
+    ul, ol { margin: 0 0 12px; padding-left: 22px; }
+    li { margin: 4px 0; }
+
+    .label-line {
+      margin: 8px 0;
+      padding: 8px 12px;
+      background: var(--tag-bg);
+      border-radius: 8px;
+    }
+
+    .label-line strong { color: var(--ink); }
+
+    .highlight {
+      background: var(--warn-bg);
+      color: var(--warn);
+      font-weight: 600;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 16px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f0f3f7;
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) td { background: #fafbfc; }
+
+    details.panel {
+      margin: 12px 0;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fafbfc;
+      overflow: hidden;
+    }
+
+    details.panel > summary {
+      cursor: pointer;
+      padding: 12px 16px;
+      font-weight: 600;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+    }
+
+    details.panel > summary::-webkit-details-marker { display: none; }
+
+    details.panel > summary::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid var(--accent);
+      border-bottom: 2px solid var(--accent);
+      transform: rotate(-45deg);
+      transition: transform 0.15s ease;
+      margin-right: 4px;
+    }
+
+    details.panel[open] > summary::before {
+      transform: rotate(45deg);
+    }
+
+    details.panel .inner {
+      padding: 0 16px 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .template {
+      border: 1px dashed #b8c4d4;
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin: 14px 0;
+      background: #fcfdfe;
+    }
+
+    .template .title {
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+
+    .callout {
+      margin: 12px 0;
+      padding: 12px 14px;
+      background: #f7f8fa;
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .rule-list > li { margin-bottom: 8px; }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 600;
+      margin-right: 6px;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    @media print {
+      body { background: #fff; }
+      .wrap { padding: 0; max-width: none; }
+      section.block, header.doc-head, nav.toc {
+        box-shadow: none;
+        break-inside: avoid;
+      }
+      details.panel[open] > summary::before { transform: rotate(45deg); }
+    }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 22px; }
+      section.block, header.doc-head { padding: 18px 16px; }
+      table { font-size: 13px; }
+      th, td { padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="doc-head">
+      <p class="eyebrow">参考价 · 功能优化方案</p>
+      <h1>参考价 AI 解读 — 优化方案</h1>
+      <p class="note">
+        修订说明：按「节点调整 / 内容优化 / icon 视觉统一」规则，并补充期现货客户日常应用逻辑；
+        <strong>不改变原文整体结构</strong>，仅在对应章节做增量修订。
+      </p>
+    </header>
+
+    <nav class="toc">
+      <h2>目录</h2>
+      <ol>
+        <li><a href="#s1">一、统一输出格式规范</a></li>
+        <li><a href="#s2">二、提示词参考</a></li>
+        <li><a href="#s3">三、期现货客户日常应用补充</a></li>
+        <li><a href="#s4">四、行情驱动标签统一判定规则</a></li>
+        <li><a href="#s5">五、修订对照</a></li>
+      </ol>
+    </nav>
+
+    <section class="block" id="proto">
+      <h2>原型说明</h2>
+      <p>点击展开更多解读：</p>
+      <details class="panel">
+        <summary>更多解读（原型示意）</summary>
+        <div class="inner">
+          <p>折叠面板默认收起，点击展开后展示：数据溯源、行情传导逻辑、数据项溯源；（18 点另含后市展望）</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="block" id="s1">
+      <h2>一、统一输出格式规范</h2>
+
+      <h3>1、页面展示分层规则（产品前端交互标准）</h3>
+
+      <h4>1）主展示区</h4>
+      <p class="label-line"><strong>【AI 行情总结正文】</strong>（单段≤400 字，纯产业客观描述；日度 9/11 点版本无预测点位、无投资建议；18 点版本正文仍保持客观复盘，预测内容单独放入折叠区「后市展望」模块）</p>
+      <p class="label-line"><strong>【行情驱动标签】</strong>固定 4 选 1：供需数据驱动 / 消息面驱动 / 供需+消息共振 / 周期驱动（月度/年度专用）</p>
+      <p class="label-line"><strong>【期现快览条】</strong><span class="tag">新增</span>主展示区正文下方、标签旁，固定一行 ≤60 字，便于期现客户扫一眼</p>
+      <p>展示项（有则展示，无则省略，不编造）：</p>
+      <ul>
+        <li>基差：现货参考价 − 对应主力合约收盘/盘中价（注明合约）</li>
+        <li>升贴水：区域主流升贴水 / 盘面升贴水方向</li>
+        <li>库存/仓单：当日可得库存或仓单变化（有数据才写）</li>
+      </ul>
+
+      <h4>2）折叠面板〔更多解读〕（默认收起，点击展开）</h4>
+      <ol>
+        <li><strong>数据溯源（新闻/资讯）</strong>：按时间、新闻分类逐条列明数据源，可溯源定位</li>
+        <li><strong>行情传导逻辑</strong>：三段固定结构（影响因素 → 传导路径 → 关键证据）</li>
+        <li><strong>数据项溯源（结构化数据）</strong>：数据收藏、数据加工、具体数据项展示（支持复选添加到我的数据、数据模板、数据加工）；正文、标签、期现快览、传导逻辑中凡引用到的数据项，均须在此列出并可点击溯源</li>
+        <li><strong>后市展望 / 预测</strong>（<span class="highlight">仅 18 点版本展示</span>）：摘取该商品当日日评/日度评估报告中的「预测」段落，客观转述，不新增点位、不给投资建议</li>
+      </ol>
+
+      <h4>3）icon 视觉统一（新增前端规范）</h4>
+      <ul>
+        <li>行情驱动标签、折叠区模块标题、数据项溯源入口、期现快览条图标，统一使用同一套线性 icon 规范（线宽、圆角、尺寸一致）</li>
+        <li>标签色仅区分语义（供需 / 消息 / 共振 / 周期），图标造型风格保持一致，禁止混用面性与线性两套风格</li>
+        <li>「更多解读」展开箭头、数据溯源外链、添加到我的数据等交互 icon 与参考价主站视觉组件库对齐</li>
+      </ul>
+
+      <h3>2、分时段输出固定模板</h3>
+      <p><strong>节点调整后：每日 3 次解读 — 9:00、11:00、18:00</strong></p>
+      <table>
+        <thead>
+          <tr><th>原节点</th><th>调整后</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>（无）</td><td><strong>9:00</strong></td><td>新增开盘解读（对应早盘开盘节点）</td></tr>
+          <tr><td><strong>10:00</strong></td><td><strong>11:00</strong></td><td>原 10 点解读整体平移至 11 点（临近午前休市复盘）</td></tr>
+          <tr><td><strong>18:00</strong></td><td><strong>18:00</strong></td><td>保留收盘复盘，并增加日评「预测」摘录</td></tr>
+        </tbody>
+      </table>
+      <p>共 <strong>4 套模板</strong>：9 点短句预览、9 点开盘完整版、11 点午前完整版、18 点收盘完整版（含预测）。</p>
+
+      <!-- 模板 1 -->
+      <div class="template">
+        <div class="title">模板 1：9 点短句精简版（弹窗/侧边折叠预览，≤100 字）</div>
+        <p class="label-line"><strong>【正文】</strong></p>
+        <p class="label-line"><strong>【标签】</strong></p>
+        <p class="label-line"><strong>【期现快览】</strong>基差/升贴水一句话（有数据才写）</p>
+        <details class="panel">
+          <summary>更多解读</summary>
+          <div class="inner">
+            <h4>数据溯源（资讯）</h4>
+            <ul>
+              <li>价格数据：{发布时间}|{新闻分类/标题}</li>
+              <li>核心事件：{发布时间}|{新闻分类/标题}</li>
+              <li>期货/供需数据：{发布时间}|{新闻分类/标题}</li>
+              <li>前置次日提示（仅 9 点专属）：{前日日期}|次日提示新闻</li>
+            </ul>
+            <h4>行情传导逻辑</h4>
+            <ul>
+              <li>影响因素：罗列 3-5 个核心变量</li>
+              <li>传导路径：因果闭环（事件/数据 → 市场心态 → 价格表现；期现补充：现货报价 ↔ 盘面情绪 ↔ 基差变化）</li>
+              <li>关键证据：原文可提取量化数据支撑</li>
+            </ul>
+            <h4>数据项溯源</h4>
+            <p>数据列表（文中信息项关联的数据项，含现货价、期货价、基差、库存等，支持复选添加）</p>
+          </div>
+        </details>
+      </div>
+
+      <!-- 模板 2 -->
+      <div class="template">
+        <div class="title">模板 2：9 点开盘完整版（主卡片核心展示，≤400 字，需带入前一日次日提示资讯）</div>
+        <p class="label-line"><strong>【正文】</strong></p>
+        <p class="label-line"><strong>【标签】</strong></p>
+        <p class="label-line"><strong>【期现快览】</strong>基差 | 升贴水 | 库存/仓单（可得则写）</p>
+        <details class="panel">
+          <summary>更多解读</summary>
+          <div class="inner">
+            <h4>数据溯源（资讯）</h4>
+            <ol>
+              <li>现货开盘/晨间报价：xxx</li>
+              <li>企业报价 / 区域成交：xxx</li>
+              <li>期货开盘数据：xxx</li>
+              <li>前置预判参考（前日次日提示）：xxx</li>
+              <li>供需库存 / 装置动态：xxx</li>
+              <li>期现相关：基差、升贴水、仓单/交割库动态（有则列）</li>
+            </ol>
+            <h4>行情传导逻辑</h4>
+            <ul>
+              <li>影响因素：xxx（含现货与盘面两侧变量）</li>
+              <li>传导路径：xxx（强调现货成交冷热 → 基差走阔/收窄 → 盘面跟跌跟涨）</li>
+              <li>关键证据：xxx</li>
+            </ul>
+            <h4>数据项溯源</h4>
+            <p>数据列表（文中信息项关联的数据项：现货参考价、主力合约开盘价、基差、区域升贴水、库存/仓单等）</p>
+          </div>
+        </details>
+      </div>
+
+      <!-- 模板 3 -->
+      <div class="template">
+        <div class="title">模板 3：11 点午前完整版（主卡片核心展示，≤400 字；承接早盘至午前资讯）</div>
+        <p class="label-line"><strong>【正文】</strong>（聚焦 9:00–11:00 盘中变化：现货调价、成交、盘面波动、基差是否修复）</p>
+        <p class="label-line"><strong>【标签】</strong></p>
+        <p class="label-line"><strong>【期现快览】</strong>午前基差变化 | 现货调价方向 | 盘面涨跌</p>
+        <details class="panel">
+          <summary>更多解读</summary>
+          <div class="inner">
+            <h4>数据溯源（资讯）</h4>
+            <ol>
+              <li>午前现货价格 / 调价动态：xxx</li>
+              <li>企业报价、区域成交变化：xxx</li>
+              <li>期货午前开高低、成交持仓：xxx</li>
+              <li>供需、装置、到货等午前更新：xxx</li>
+              <li>基差 / 升贴水午前变化：xxx</li>
+            </ol>
+            <h4>行情传导逻辑</h4>
+            <ul>
+              <li>影响因素：xxx</li>
+              <li>传导路径：xxx（午前典型路径：现货挺价/松动 → 基差变动 → 盘面跟随或背离）</li>
+              <li>关键证据：xxx</li>
+            </ul>
+            <h4>数据项溯源</h4>
+            <p>数据列表（文中信息项关联的数据项）</p>
+          </div>
+        </details>
+        <p class="callout">说明：原「10 点早盘完整版」内容骨架平移至此；资讯窗口由「当日 10 点前」调整为「当日 11 点前」（仍含前一日次日提示作为前置参考）。</p>
+      </div>
+
+      <!-- 模板 4 -->
+      <div class="template">
+        <div class="title">模板 4：18 点收盘完整版（全日复盘 + 日评预测摘录，正文≤400 字）</div>
+        <p class="label-line"><strong>【正文】</strong>（全日复盘，客观描述）</p>
+        <p class="label-line"><strong>【标签】</strong></p>
+        <p class="label-line"><strong>【期现快览】</strong>收盘基差 | 全日基差波幅 | 库存/仓单日度变化</p>
+        <details class="panel" open>
+          <summary>更多解读</summary>
+          <div class="inner">
+            <h4>数据溯源（资讯）</h4>
+            <ol>
+              <li>全国/各区域收盘现货均价</li>
+              <li>全量盘中企业报价、成交动态</li>
+              <li>期货全日开高低收、成交持仓</li>
+              <li>当日供需、库存、下游开工统计</li>
+              <li>当日全市场涨跌样本统计数据</li>
+              <li>期现相关：收盘基差、区域升贴水、仓单/交割相关动态</li>
+            </ol>
+            <h4>行情传导逻辑</h4>
+            <ul>
+              <li>影响因素：xxx</li>
+              <li>传导路径：xxx（全日闭环：现货—基差—盘面—成交/持仓）</li>
+              <li>关键证据：xxx</li>
+            </ul>
+            <h4>数据项溯源</h4>
+            <p>数据列表（文中信息项关联的数据项，须覆盖正文与期现快览中引用的全部数据项）</p>
+            <h4>后市展望 / 预测（18 点专属，摘自日评）</h4>
+            <ul>
+              <li>来源：该商品当日日度评估报告 / 日评中的「预测」章节</li>
+              <li>输出要求：客观摘录或归纳日评预测观点（方向、供需预期、关注点），<strong>不新增点位、不写投资建议、不替代日评原文结论</strong></li>
+              <li>溯源：注明日评标题/发布时间，预测中涉及的数据项同步进入上方「数据项溯源」</li>
+            </ul>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="block" id="s2">
+      <h2>二、提示词参考</h2>
+      <p>你是大宗商品产业 AI 分析师，基于卓创提供的对应商品的全天和次日相关新闻，以及可结构化提取的期现数据：</p>
+      <ul>
+        <li><strong>XX-9 点</strong>（当日 9 点前资讯，含前一日次日提示；叠加开盘现货/期货可得数据）</li>
+        <li><strong>XX-11 点</strong>（当日 11 点前资讯，含前一日次日提示；叠加午前现货调价、盘面、基差）</li>
+        <li><strong>XX-18 点</strong>（当日全天资讯 0–18 点；叠加收盘现货/期货/基差/库存；并读取当日日评「预测」章节）</li>
+      </ul>
+
+      <h3>硬性执行规则</h3>
+      <ol class="rule-list">
+        <li>分四类输出：9 点短句预览版、9 点开盘完整版、11 点午前完整版、18 点收盘完整版（含后市展望），严格套用固定格式；</li>
+        <li>字数约束：短句≤100 字，完整总结单段≤400 字，不拆分多条，连贯一段话；期现快览条≤60 字；</li>
+        <li>内容边界：
+          <ul>
+            <li>9 点 / 11 点版本必须读取前日次日提示作为前置参考；</li>
+            <li>18 点版本仅使用当日 0–18 点全部资讯，禁止引入前日次日提示；</li>
+            <li>18 点「后市展望」仅允许摘录当日日评预测内容，不得自行外推点位；</li>
+          </ul>
+        </li>
+        <li>禁止主观投资建议、禁止自行给出点位预测；只客观描述价格、事件、供需、基差因果；日评预测仅转述；</li>
+        <li>标签仅四选一：供需数据驱动 / 消息面驱动 / 供需+消息共振 / 周期驱动（月/年）；</li>
+        <li><strong>溯源必须双轨到位</strong>：资讯溯源精确到发布时间、新闻分类；数据项溯源须映射名称、口径、时点，支持收藏/加工；</li>
+        <li>传导逻辑固定三段式：影响因素、传导路径、关键证据；期现品种须体现「现货 ↔ 基差 ↔ 期货」联动；</li>
+        <li>输出排版：主展示正文 + 标签 + 期现快览在前，溯源 &amp; 逻辑 &amp;（18 点）预测放入折叠〔更多解读〕模块，严格使用 <code>&lt;details&gt;</code> 标签格式；</li>
+        <li>icon / 标签视觉按「一、1、3）icon 视觉统一」规范输出语义，不混用风格。</li>
+      </ol>
+
+      <p class="callout">本次商品：{商品名称}，基准日期：0000-00-00（当天），附件新闻池：{Excel 文本内容}，结构化数据池：{现货参考价/期货行情/基差/库存仓单等}，日评预测池（仅 18 点）：{日评预测章节文本}</p>
+
+      <h3>分时段细分补充提示词（可分段调用）</h3>
+      <ol>
+        <li><strong>9 点短句版</strong>：极简摘要，只保留开盘核心价格 + 1 个核心驱动 + 基差方向（有则写）</li>
+        <li><strong>9 点完整版</strong>：融合前日次日提示 + 开盘现货/期货、企业报价、基差开盘状态</li>
+        <li><strong>11 点完整版</strong>：增量纳入 9–11 点现货调价、成交、盘面波动、基差修复/走阔，突出午前期现是否背离</li>
+        <li><strong>18 点收盘版</strong>：全日复盘 + 基差收盘与日度变化；摘录日评「预测」写入后市展望</li>
+      </ol>
+
+      <h3>【触发规则调整 · 原 2026/7/7，节点同步更新】</h3>
+      <ul>
+        <li>按该商品当日是否有新闻判断是否 AI 解析；特例：<strong>9 点、11 点</strong>需看是否有次日提示，如有也需解读</li>
+        <li>调整原因：参考价更新时间在 13:00–18:00 不定，甚至最晚 18:00，避免解读缺失；节点由原 10 点调整为 9/11 点后仍适用</li>
+        <li>18 点若日评「预测」缺失，则标注「当日日评暂无预测段落」，不编造</li>
+      </ul>
+    </section>
+
+    <section class="block" id="s3">
+      <h2>三、期现货客户日常应用补充</h2>
+      <p class="note">目标：做期现交易的客户打开参考价 AI 解读后，能直接用于盯基差、判升贴水、对库存/仓单、看盘面与现货是否背离——贴合其日常「报价—下单—对锁/套保—复盘」节奏。</p>
+
+      <h3>1、各时段客户关注点</h3>
+      <table>
+        <thead>
+          <tr><th>时段</th><th>期现客户典型动作</th><th>AI 解读应强化的信息</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>9:00</strong></td>
+            <td>开盘对价、决定是否挂单/点价</td>
+            <td>开盘现货 vs 盘面、基差初值、前日次日提示是否兑现、装置/到货有无扰动</td>
+          </tr>
+          <tr>
+            <td><strong>11:00</strong></td>
+            <td>午前调价、半日期现是否划算</td>
+            <td>午前调价幅度、成交冷热、基差是否修复、盘面跟现货还是背离</td>
+          </tr>
+          <tr>
+            <td><strong>18:00</strong></td>
+            <td>收盘锁价/移仓/隔夜头寸、写日复盘</td>
+            <td>收盘基差、全日基差波幅、库存/仓单、区域升贴水、日评后市关注点</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>2、建议优先出现的数据项（有则写、无则不编）</h3>
+      <ul>
+        <li><strong>价格</strong>：区域现货参考价、主流企业挂牌/成交、期货主力开高低收</li>
+        <li><strong>价差</strong>：基差（现货−期货）、与近 5 日/近月均值对比（仅陈述差值，不做建议）</li>
+        <li><strong>升贴水</strong>：主销区对盘面升贴水、厂提/送到差异</li>
+        <li><strong>供需载体</strong>：社会库存、厂库、仓单、开工、检修、到货、下游产销</li>
+        <li><strong>盘面结构</strong>：成交量、持仓量变化</li>
+        <li><strong>交割相关</strong>（临近交割月加强）：交割品级、库区动态、仓单增减</li>
+      </ul>
+
+      <h3>3、传导逻辑期现化示例</h3>
+      <ul>
+        <li>影响因素：现货成交、库存、装置、盘面涨跌、升贴水、仓单</li>
+        <li>传导路径：现货松动/挺价 → 基差走阔或收窄 → 盘面跟跌/跟涨或背离 → 成交持仓变化印证</li>
+        <li>关键证据：具体价差数值、库存变动吨数、持仓增减手等可溯源数据</li>
+      </ul>
+
+      <h3>4、与「禁止投资建议」的边界</h3>
+      <ul>
+        <li><strong>允许</strong>：客观描述「基差走强/走弱」「现货升水扩大」「仓单增加」</li>
+        <li><strong>禁止</strong>：指导「适合买现货抛期货」「建议交割」「目标点位 xx」等操作建议</li>
+        <li><strong>18 点预测</strong>：仅转述日评已有表述，并挂数据项溯源</li>
+      </ul>
+    </section>
+
+    <section class="block" id="s4">
+      <h2>四、【行情驱动标签统一判定规则】</h2>
+
+      <h3>1. 供需数据驱动</h3>
+      <p><strong>判定标准：</strong>行情核心由量化产业指标主导，无重磅突发消息。</p>
+      <p><strong>包含指标：</strong>库存、开工、到货、产销、基差、成交、产能、仓单、屠宰量、养殖存栏等；仅零散行业常规资讯，无政策/地缘/装置突发事件。</p>
+      <p><strong>适用场景：</strong>现货库存持续累库/去库、下游开工大幅升降、产区出货量变化、市场成交冷热、基差系统性走强/走弱。</p>
+
+      <h3>2. 消息面驱动</h3>
+      <p><strong>判定标准：</strong>行情完全由突发/重磅资讯主导，供需量化数据无明显异动。</p>
+      <p><strong>包含资讯：</strong>地缘冲突、进出口新规、政策调控、大型装置临时检修/重启、宏观利率、产区重大调价通知；当期库存/开工等核心供需指标平稳。</p>
+      <p><strong>适用场景：</strong>突发进出口限制、海外装置意外停车、政策收储抛储、地缘航运风险。</p>
+
+      <h3>3. 供需+消息共振</h3>
+      <p><strong>判定标准：</strong>供需量化数据出现明显异动 + 同期重磅消息双向/同向共振，两者共同拉动价格波动。</p>
+      <p><strong>适用场景：</strong>库存大幅去库叠加海外供应中断、下游开工回暖叠加产业利好政策、累库预期叠加利空进出口消息、基差极端叠加交割/仓单事件。</p>
+
+      <h3>4. 周期驱动（日度 9/11/18 点不使用）</h3>
+      <p><strong>判定标准：</strong>行情由中长期产业周期逻辑主导，短期单日消息、单日供需波动仅为阶段性扰动。</p>
+      <p><strong>包含周期维度：</strong>年度产能投放周期、季度季节性淡旺季、半年库存循环周期、全年进口供应大趋势。</p>
+      <p><strong>适用场景：</strong>月度总结、年度复盘。</p>
+
+      <h3>打标通用执行顺序（优先级从上到下）</h3>
+      <ol>
+        <li>若为月度/年度总结，优先判断是否属于中长期周期趋势，符合直接打【周期驱动】；</li>
+        <li>日度行情跳过周期标签，先区分是否同时满足「供需数据异动 + 重磅消息」，满足打【供需+消息共振】；</li>
+        <li>无共振场景：仅数据异动、消息平淡 →【供需数据驱动】；仅重磅消息、供需指标平稳 →【消息面驱动】。</li>
+      </ol>
+    </section>
+
+    <section class="block" id="s5">
+      <h2>五、修订对照（便于评审）</h2>
+      <table>
+        <thead>
+          <tr><th>维度</th><th>原文</th><th>优化后</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>解读节点</td>
+            <td>10 点、18 点</td>
+            <td><strong>9:00、11:00、18:00</strong>（10 点整体改为 11 点，并新增 9 点）</td>
+          </tr>
+          <tr>
+            <td>模板套数</td>
+            <td>3 套（10 短句 / 10 完整 / 18 完整）</td>
+            <td>4 套（9 短句 / 9 完整 / 11 完整 / 18 完整+预测）</td>
+          </tr>
+          <tr>
+            <td>18 点内容</td>
+            <td>全日复盘</td>
+            <td>全日复盘 + <strong>日评「预测」摘录（后市展望）</strong></td>
+          </tr>
+          <tr>
+            <td>数据溯源</td>
+            <td>资讯溯源 + 数据列表</td>
+            <td>全量内容强制 <strong>数据项溯源</strong>（含期现快览、预测）</td>
+          </tr>
+          <tr>
+            <td>期现能力</td>
+            <td>未单独强调</td>
+            <td>新增期现快览条、基差/升贴水/库存仓单、期现传导路径</td>
+          </tr>
+          <tr>
+            <td>视觉</td>
+            <td>未单列</td>
+            <td>新增 <strong>icon 视觉统一</strong> 规范</td>
+          </tr>
+          <tr>
+            <td>结构</td>
+            <td>—</td>
+            <td>分层、折叠、标签、提示词骨架均保持原文结构</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer>参考价 AI 解读优化方案 · HTML 版本</footer>
+  </div>
+</body>
+</html>
