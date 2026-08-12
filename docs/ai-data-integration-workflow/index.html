@@ -1042,6 +1042,34 @@
 
     .flow-mini .arrow { opacity: 0.45; }
 
+    .route-box {
+      margin: 10px 14px 0;
+      border: 1px dashed #b7d0cd;
+      background: #f3faf9;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+
+    .route-box .ttl {
+      font-weight: 700;
+      color: var(--teal-deep);
+      margin-bottom: 6px;
+    }
+
+    .route-box .opt {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      padding: 4px 0;
+      color: var(--ink-soft);
+      line-height: 1.45;
+    }
+
+    .route-box .opt strong { color: var(--ink); }
+
+    .route-box .opt.on strong { color: var(--teal-deep); }
+
     @media (max-width: 700px) {
       .mod-grid { grid-template-columns: 1fr; }
     }
@@ -1071,7 +1099,7 @@
       <a href="#n4"><strong>04 筛选平台</strong><span>数据项 + 信息项双目录，销售自助勾选</span></a>
       <a href="#n5"><strong>05 报价与出表</strong><span>筛选结果直接生成报价与线下交付表格</span></a>
       <a href="#n6"><strong>06 交付闭环底座</strong><span>审批、权限、签约；商品-数据/信息本体</span></a>
-      <a href="#n7"><strong>07 项目修改审批</strong><span>交付后更换数据项/信息项/周期，版本化执行</span></a>
+      <a href="#n7"><strong>07 项目修改审批</strong><span>默认同单 Vn；边界才新开需求</span></a>
     </nav>
   </header>
 
@@ -1144,7 +1172,7 @@
             <a href="#n7" class="bone-label">
               <rect class="bone-card" x="678" y="28" width="204" height="62" />
               <text class="bone-title" x="692" y="52">07 项目修改审批</text>
-              <text class="bone-sub" x="692" y="72">交付后变更 · 版本化</text>
+              <text class="bone-sub" x="692" y="72">默认同单变更 · 非新线索</text>
               <rect class="bone-card ai" x="698" y="98" width="184" height="72" />
               <text class="bone-sub" x="712" y="120">更换数据项/信息项</text>
               <text class="bone-sub" x="712" y="138">更换周期（单/多）</text>
@@ -1550,19 +1578,19 @@
         <div class="node-info">
           <div class="node-tag"><span class="n">07</span> 交付后变更</div>
           <h3>项目修改审批（版本化）</h3>
-          <p class="goal">项目交付后若需更换数据项、信息项或数据周期，不走线下口头改单。统一入口：修改 → 提交 → 审批 → 执行。系统生成补充版本记录（V1、V2…），交付按已通过审批的版本执行，历史版本可追溯。</p>
+          <p class="goal">项目交付后若需更换数据项、信息项或数据周期，<strong>默认不新开线索</strong>，挂在原订单走变更单：修改 → 提交 → 审批 → 执行。系统生成补充版本（V1、V2…）。仅新客户 / 新商品线 / 改加工 / 超合同边界时，才引导回节点 01 新提需求。</p>
           <div class="ai-box">
-            <h4>变更场景与 AI 介入</h4>
+            <h4>改单 vs 新需求 · AI 介入</h4>
             <ul>
-              <li>更换数据项：单个 / 多个（按数据项 ID 替换）</li>
-              <li>更换信息项：单个 / 多个（按信息项 ID 替换，如周评→月评）</li>
-              <li>更换数据周期：单个 / 多个时间窗调整</li>
-              <li>AI：自动 diff 旧方案、重算报价影响、生成变更说明与审批单</li>
+              <li>同单换项/周期（目录可覆盖）→ 变更单，复用筛选与报价，跳过对话与 PM 判定</li>
+              <li>更换数据项 / 信息项 / 周期：单个或多个，按 DATA-ID / INFO-ID</li>
+              <li>边界场景（新商品线、改加工、超合同）→ 建议转节点 01 新需求</li>
+              <li>AI：路由建议 + diff 旧方案 + 重算报价 + 预填审批单</li>
             </ul>
           </div>
           <div class="change">
-            <div><strong>版本规则</strong>不覆盖旧版；每次审批通过生成 Vn 补充记录</div>
-            <div><strong>执行规则</strong>权限与交付严格按最新已通过版本生效</div>
+            <div><strong>默认路径</strong>同单 Change Order → Vn，不新开线索号</div>
+            <div><strong>版本规则</strong>不覆盖旧版；权限与交付按最新已通过版本生效</div>
           </div>
         </div>
         <div class="proto">
@@ -1575,6 +1603,11 @@
               </div>
               <div style="padding:12px 14px 0;font-size:12px;color:var(--ink-soft);">
                 订单 DRAFT-8891 · CL-2026-0807 · 已交付
+              </div>
+              <div class="route-box">
+                <div class="ttl">入口分流（AI 建议）</div>
+                <div class="opt on"><strong>✓ 项目修改</strong><span>同单变更 · 目录可覆盖，复用筛选/报价</span></div>
+                <div class="opt"><strong>□ 转新需求</strong><span>超合同 / 新商品线 / 需重判集成或加工</span></div>
               </div>
               <div class="mod-grid">
                 <div class="mod-opt on"><b>更换数据项</b><span>单个 / 多个 · 按 DATA-ID</span></div>
@@ -1595,7 +1628,7 @@
               </div>
               <div class="actions" style="padding:0 14px 14px;">
                 <button class="btn copper">提交修改审批</button>
-                <button class="btn secondary">查看 V1 原文</button>
+                <button class="btn secondary">转为新需求</button>
               </div>
             </div>
           </div>
@@ -1607,7 +1640,7 @@
   <footer class="wrap">
     <p>
       使用建议：先用节点 01–05 跑通「甲醇市场价 + 甲醇周评」标准集成主路径；筛选平台同时维护数据项 ID 与信息项 ID。
-      节点 06 的知识底座与 OA 打通可并行建设；交付后变更统一走节点 07（修改→审批→按 Vn 执行）。
+      节点 06 的知识底座与 OA 打通可并行建设；交付后变更<strong>默认同单走节点 07</strong>（修改→审批→按 Vn 执行），边界场景才新开线索。
       数据加工分支保持现有项目经理/分析师流程，仅复用需求结构化结果。
     </p>
   </footer>
