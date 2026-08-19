@@ -134,23 +134,44 @@ def align(h="center", wrap=True):
     return Alignment(horizontal=h, vertical="center", wrap_text=wrap)
 
 
-def main():
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "商品分类"
+MANAGER_ORDER = ["韩永", "孙伟卓", "王媛媛", "李春燕", "王能"]
+MANAGER_HEADER = {
+    "韩永": "1F4E79",
+    "孙伟卓": "1A5276",
+    "王媛媛": "154360",
+    "李春燕": "922B21",
+    "王能": "6E2C00",
+}
+HEADERS = ["商品名称", "事业部", "产业群", "项目经理"]
 
-    headers = ["商品名称", "事业部", "产业群", "项目经理"]
-    for col, header in enumerate(headers, 1):
-        cell = ws.cell(1, col, header)
+
+def write_table(ws, start_row, rows, header_color):
+    title_cell = ws.cell(start_row, 1, f"项目经理：{rows[0][3]}（{len(rows)}项）")
+    ws.merge_cells(start_row=start_row, start_column=1, end_row=start_row, end_column=4)
+    title_cell.font = font(size=12, bold=True, color="FFFFFF")
+    title_cell.fill = fill(header_color)
+    title_cell.alignment = align()
+    for col in range(1, 5):
+        cell = ws.cell(start_row, col)
+        cell.fill = fill(header_color)
+        cell.border = border()
+        cell.alignment = align()
+    ws.row_dimensions[start_row].height = 26
+
+    header_row = start_row + 1
+    for col, header in enumerate(HEADERS, 1):
+        cell = ws.cell(header_row, col, header)
         cell.font = font(size=11, bold=True, color="FFFFFF")
-        cell.fill = fill("1F4E79")
+        cell.fill = fill(header_color)
         cell.alignment = align()
         cell.border = border()
+    ws.row_dimensions[header_row].height = 22
 
-    for i, (name, bu, group, pm) in enumerate(ROWS, 1):
+    for i, (name, bu, group, pm) in enumerate(rows, 1):
+        r = header_row + i
         values = [name, bu, group, pm]
         for col, val in enumerate(values, 1):
-            cell = ws.cell(i + 1, col, val)
+            cell = ws.cell(r, col, val)
             if col == 1:
                 bg = "F8F9F9" if i % 2 == 0 else "FFFFFF"
             elif col == 3:
@@ -161,16 +182,43 @@ def main():
             cell.alignment = align(h="left" if col == 1 else "center")
             cell.border = border()
             cell.fill = fill(bg)
-        ws.row_dimensions[i + 1].height = 22
+        ws.row_dimensions[r].height = 22
+    return header_row + len(rows)
 
-    ws.row_dimensions[1].height = 28
+
+def style_widths(ws):
     for i, width in enumerate([36, 12, 20, 12], 1):
         ws.column_dimensions[get_column_letter(i)].width = width
-    ws.freeze_panes = "A2"
+
+
+def main():
+    grouped = {pm: [] for pm in MANAGER_ORDER}
+    for row in ROWS:
+        grouped[row[3]].append(row)
+
+    wb = Workbook()
+
+    overview = wb.active
+    overview.title = "按项目经理分表"
+    row_cursor = 1
+    for pm in MANAGER_ORDER:
+        rows = grouped[pm]
+        row_cursor = write_table(overview, row_cursor, rows, MANAGER_HEADER[pm])
+        row_cursor += 2
+    style_widths(overview)
+
+    for i, pm in enumerate(MANAGER_ORDER):
+        ws = wb.create_sheet(pm)
+        write_table(ws, 1, grouped[pm], MANAGER_HEADER[pm])
+        style_widths(ws)
+        ws.freeze_panes = "A3"
+        ws.sheet_properties.tabColor = MANAGER_HEADER[pm]
 
     out = "/workspace/商品分类_事业部产业群项目经理.xlsx"
     wb.save(out)
-    print(f"saved {out} rows={len(ROWS)}")
+    print("saved", out)
+    for pm in MANAGER_ORDER:
+        print(pm, len(grouped[pm]))
 
 
 if __name__ == "__main__":
