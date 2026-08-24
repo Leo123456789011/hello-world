@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>数据元素商场 · 可编辑文案</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #14201c; --ink-soft: #3a4a44; --navy: #1a4a40;
+      --amber: #c4922a; --line: #cfd8e3; --skip: #8a5a3a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: Manrope, "Noto Serif SC", sans-serif; color: var(--ink);
+      background: linear-gradient(180deg, #f3f7f5, #f7f9fb);
+    }
+    .wrap { width: min(900px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+    h1 { font-family: "Noto Serif SC", serif; font-size: 1.8rem; margin: 0 0 8px; }
+    .lede { color: var(--ink-soft); line-height: 1.65; margin: 0 0 18px; }
+    .bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+    .btn {
+      border: 0; border-radius: 10px; padding: 9px 14px; font-weight: 700;
+      font-size: 13px; cursor: pointer; font-family: inherit;
+    }
+    .btn.primary { background: var(--navy); color: #fff; }
+    .btn.secondary { background: #e8f1ed; color: var(--navy); }
+    .nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 22px; }
+    .nav a {
+      display: block; background: #fff; border: 1px solid var(--line);
+      border-radius: 12px; padding: 10px 12px; text-decoration: none; color: inherit;
+    }
+    .nav strong { display: block; font-size: 13px; margin-bottom: 2px; }
+    .nav span { font-size: 11.5px; color: var(--ink-soft); }
+    .card {
+      background: #fff; border: 1px solid var(--line); border-radius: 16px;
+      padding: 16px 18px 18px; margin-bottom: 16px;
+    }
+    .card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .card h2 { font-family: "Noto Serif SC", serif; font-size: 1.15rem; margin: 0; }
+    .hint { font-size: 12px; color: var(--ink-soft); margin: 0 0 8px; }
+    .tag {
+      display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px;
+      padding: 3px 9px; margin-left: 8px; vertical-align: middle;
+    }
+    .tag.focus { background: #e8f4ef; color: var(--navy); }
+    .tag.light { background: #fff6e8; color: #8a5a12; }
+    .tag.skip { background: #fff4ec; color: var(--skip); }
+    textarea {
+      width: 100%; min-height: 220px; border: 1px solid var(--line); border-radius: 12px;
+      padding: 12px 14px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12.5px; line-height: 1.55; resize: vertical; background: #fafbfd; color: var(--ink);
+    }
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 999px;
+      font-size: 13px; opacity: 0; transition: 0.25s ease; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    @media (max-width: 800px) { .nav { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>数据元素商场 · 可编辑原型文案</h1>
+    <p class="lede">直接改框内文字，点「复制本节点」可贴进评审材料。可视化鱼骨见 <a href="./index.html">index.html</a>。客户不判集成/加工；包和元件只是分场景陈列，可与散装混买。</p>
+    <div class="bar">
+      <button class="btn primary" type="button" id="copyAll">复制全部节点</button>
+      <a class="btn secondary" href="./index.html">打开鱼骨图</a>
+      <a class="btn secondary" href="./prototypes-editable.md">Markdown 全文</a>
+    </div>
+    <nav class="nav">
+      <a href="#e1"><strong>01 登录商场</strong><span>基本不做</span></a>
+      <a href="#e2"><strong>02 散装 AI</strong><span>重点做</span></a>
+      <a href="#e3"><strong>03 场景元件</strong><span>轻量做</span></a>
+      <a href="#e4"><strong>04 数据包</strong><span>轻量做</span></a>
+      <a href="#e5"><strong>05 简单报价</strong><span>重点做</span></a>
+      <a href="#e6"><strong>06 下单链接</strong><span>轻量做</span></a>
+      <a href="#e7"><strong>07 销售判定</strong><span>重点做</span></a>
+    </nav>
+
+    <section class="card" id="e1">
+      <div class="card-head">
+        <h2>01｜登录进入商场 <span class="tag skip">基本不做</span></h2>
+        <button class="btn secondary copy-one" type="button" data-target="t1">复制本节点</button>
+      </div>
+      <textarea id="t1">【页面】数据元素商场 · 登录
+【账号】华燃贸易 / 采购经理 李某（现有权限体系）
+
+【进入后货架】散装数据项 · 场景元件 · 分析师数据包
+【按钮】登录进入商场｜找回账号
+
+【AI 介入】无
+【明确不做】不单独建设登录/鉴权模型</textarea>
+    </section>
+
+    <section class="card" id="e2">
+      <div class="card-head">
+        <h2>02｜散装单 · AI 辅助挑选 <span class="tag focus">重点做</span></h2>
+        <button class="btn secondary copy-one" type="button" data-target="t2">复制本节点</button>
+      </div>
+      <p class="hint">客户只见数据项，不见「集成/加工」标签</p>
+      <textarea id="t2">【页面】散装挑选 · AI 助手
+
+【客户条件】华东 LNG 出厂价、周频、近一年；再加华北管道气到岸价。
+
+【AI 筛后】
+DATA-LNG-EC-SPOT  LNG 出厂价（华东）· 周
+DATA-PNG-NC-CIF   管道气到岸价（华北）· 周
+
+【按钮】按条件筛选｜加入购物车｜换一批条件
+【AI 介入】自然语言→目录命中；可勾选清单；缺口追问
+【明确不做】不让客户选择走集成还是走加工
+【现状→AI后】只能找销售代选 → 给条件即可看到可买清单</textarea>
+    </section>
+
+    <section class="card" id="e3">
+      <div class="card-head">
+        <h2>03｜场景数据元件 <span class="tag light">轻量做</span></h2>
+        <button class="btn secondary copy-one" type="button" data-target="t3">复制本节点</button>
+      </div>
+      <textarea id="t3">【页面】场景元件货架
+【说明】元件=该场景必要数据项的预组陈列，方便按场景买；可与散装、数据包同时加入购物车。
+
+【场景】采购｜期货交易｜期现结合交易（已选）
+【期现结合预组】现货 DATA-LNG-EC-SPOT · 期货结算 DATA-LNG-FUT-SET · 基差 DATA-LNG-BASIS
+
+【按钮】查看元件明细｜加入购物车
+【AI 介入】场景检索与相近推荐；组合本身已预生成，不现场编造
+【明确不做】不把元件当成与散装互斥的订单类型</textarea>
+    </section>
+
+    <section class="card" id="e4">
+      <div class="card-head">
+        <h2>04｜分析师数据包 <span class="tag light">轻量做</span></h2>
+        <button class="btn secondary copy-one" type="button" data-target="t4">复制本节点</button>
+      </div>
+      <textarea id="t4">【页面】分析师数据包
+【说明】包=分析师打标后的重要数据项集合，可直接查看购买，可与散装、元件混装。
+
+【天然气数据包 PKG-NG-CORE】
+LNG 出厂价（华东/华南）· 核心
+管道气到岸价 · 核心
+接收站库存 · 观察
+发电气需求 · 观察
+
+【按钮】查看包内数据项｜整包加入购物车
+【AI 介入】包名/商品检索、包内说明摘要
+【明确不做】不替代分析师打标与打包</textarea>
+    </section>
+
+    <section class="card" id="e5">
+      <div class="card-head">
+        <h2>05｜混装清单与简单报价 <span class="tag focus">重点做</span></h2>
+        <button class="btn secondary copy-one" type="button" data-target="t5">复制本节点</button>
+      </div>
+      <textarea id="t5">【页面】购物车 · 简单报价（参考）
+
+【混装】
+散装  LNG 出厂价（华东）周·1年     ¥ 12,000
+散装  管道气到岸价（华北）周·1年   ¥ 8,000
+元件  期现结合（现货+结算+基差）   ¥ 15,000
+数据包 天然气数据包 PKG-NG-CORE    ¥ 18,000
+合计（参考）                       ¥ 53,000
+
+【提示】本报价为商场参考价，非正式成交价。提交后由销售协助确认方案与路径。
+【按钮】提交订单给销售｜返回改选
+【AI 介入】按目录价规汇总参考价；散装与包内重复项提示（不替客户删）
+【明确不做】不锁死集成/加工；不生成正式合同价</textarea>
+    </section>
+
+    <section class="card" id="e6">
+      <div class="card-head">
+        <h2>06｜客户下单 · 链接销售 <span class="tag light">轻量做</span></h2>
+        <button class="btn secondary copy-one" type="button" data-target="t6">复制本节点</button>
+      </div>
+      <textarea id="t6">【页面】订单已提交 · 销售将联系您
+
+【草稿单】MALL-2026-0824
+客户：华燃贸易
+清单：散装 2 + 元件 1 + 数据包 1
+参考价：¥ 53,000
+对口销售：王某（已推送）
+
+【客户按钮】查看我提交的清单｜补充一句需求（可选留言）
+【销售通知】企微/邮件草稿：新商场草稿单待接收
+
+【AI 介入】生成草稿内部单、去重摘要、销售通知草稿
+【明确不做】选品过程中销售不插入接管</textarea>
+    </section>
+
+    <section class="card" id="e7">
+      <div class="card-head">
+        <h2>07｜销售判定集成 / 加工 <span class="tag focus">重点做</span></h2>
+        <button class="btn secondary copy-one" type="button" data-target="t7">复制本节点</button>
+      </div>
+      <textarea id="t7">【页面】销售工作台 · 路径建议（客户不可见本页）
+
+【系统建议】
+标准数据项且可 API → 建议集成
+无标准项、需分析师生产、线下交付 → 建议加工
+
+示例：目录项/元件/天然气包 → 集成
+客户留言「按我司口径重做开工率」→ 加工
+
+【销售拍板（沟通后）】
+1. 整单走集成（仅保留标准项）
+2. 整单走加工（全部按加工交付规则线下提供）
+3. 拆成两部分：集成内部单 + 加工内部单（挂原商场单）
+
+【按钮】接收订单｜按建议拆成两单｜全部改走加工｜转入内部主链
+【AI 介入】逐行命中标准项/API；建议+证据；生成拆单草稿
+【明确不做】不替代销售拍板；不跳过内部完整流程
+【交接】集成从线索/筛选重做；加工从需求拆解重做；商场清单与参考价仅作草稿</textarea>
+    </section>
+
+    <section class="card" id="pitch">
+      <div class="card-head">
+        <h2>附录｜评审口径</h2>
+        <button class="btn secondary copy-one" type="button" data-target="tp">复制本节点</button>
+      </div>
+      <textarea id="tp" style="min-height:160px">数据元素商场是面向客户的选品层，不是第三条履约链。
+客户只负责选（散装/元件/包可混）和看简单参考价，然后下单给销售。
+集成 vs 加工由销售判定：有标准项且可 API → 集成；要分析师生产且线下交付 → 加工；沟通后可整单或拆两单。
+商场价不是成交价。内部仍走原集成、加工完整流程。
+AI 优先打在散装筛选、参考报价、销售路径建议三处。
+选品过程中销售不随时接管。</textarea>
+    </section>
+  </div>
+  <div class="toast" id="toast">已复制到剪贴板</div>
+  <script>
+    const toast = document.getElementById('toast');
+    function flash() {
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1600);
+    }
+    async function copyText(t) {
+      await navigator.clipboard.writeText(t);
+      flash();
+    }
+    document.querySelectorAll('.copy-one').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const el = document.getElementById(btn.dataset.target);
+        copyText(el.value);
+      });
+    });
+    document.getElementById('copyAll').addEventListener('click', () => {
+      const ids = ['t1','t2','t3','t4','t5','t6','t7','tp'];
+      const all = ids.map((id) => document.getElementById(id).value).join('\n\n————\n\n');
+      copyText(all);
+    });
+  </script>
+</body>
+</html>
