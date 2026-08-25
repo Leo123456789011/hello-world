@@ -272,8 +272,56 @@
     .flag.int { background: #e8f6ef; color: var(--ok); }
     .flag.prc { background: #fff1e4; color: #8a5a12; }
     footer.wrap { padding: 0 0 56px; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.7; }
+
+    .sum-logic {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+      padding: 8px 24px 18px;
+    }
+    .sum-logic article {
+      background: #fff; border: 1px solid var(--line); border-radius: 14px;
+      padding: 14px 16px;
+    }
+    .sum-logic .num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--navy-deep); color: #fff; font-size: 12px; font-weight: 700;
+      margin-right: 8px;
+    }
+    .sum-logic h3 {
+      font-size: 14px; margin: 0 0 8px; font-family: "Noto Serif SC", serif;
+      display: flex; align-items: center;
+    }
+    .sum-logic p { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink-soft); }
+    .sum-table-wrap { padding: 0 24px 24px; overflow-x: auto; }
+    table.sum {
+      width: 100%; border-collapse: collapse; min-width: 760px;
+      background: #fff; border: 1px solid var(--line); border-radius: 14px;
+      overflow: hidden; font-size: 13px;
+    }
+    table.sum th, table.sum td {
+      padding: 12px 14px; text-align: left; vertical-align: top;
+      border-bottom: 1px solid #e8eef3; line-height: 1.5;
+    }
+    table.sum tr:last-child td { border-bottom: 0; }
+    table.sum thead th {
+      background: var(--navy-deep); color: #fff; font-weight: 700; font-size: 13px;
+    }
+    table.sum thead th.ai { background: #1a4a40; }
+    table.sum thead th.human { background: #3d4a3f; }
+    table.sum tbody tr:nth-child(even) { background: #f7faf8; }
+    table.sum tbody tr:hover { background: #eef6f3; }
+    table.sum .nid {
+      display: inline-block; min-width: 22px; text-align: center;
+      background: var(--navy-deep); color: #fff; border-radius: 6px;
+      font-size: 11px; font-weight: 700; padding: 2px 6px; margin-right: 6px;
+    }
+    table.sum .nid.skip { background: var(--skip); }
+    table.sum .nid.light { background: var(--amber); }
+    table.sum .who { color: var(--navy); font-weight: 700; }
+    table.sum a.jump { color: inherit; }
+    table.sum a.jump:hover { text-decoration: underline; }
     @media (max-width: 900px) {
-      .node-top, .change, .toc { grid-template-columns: 1fr; }
+      .node-top, .change, .toc, .sum-logic { grid-template-columns: 1fr; }
       .proto { padding: 16px; }
       .scene-grid { grid-template-columns: 1fr; }
     }
@@ -294,6 +342,7 @@
       <div class="pill"><strong>轻量做</strong> 03 元件检索 · 04 包检索 · 06 草稿单/通知</div>
       <div class="pill skip"><strong>基本不做</strong> 01 登录鉴权 · 选品中销售接管</div>
       <div class="pill"><strong>示例</strong> 散装 LNG + 期现元件 + 天然气包</div>
+      <a class="pill focus" href="#ai-nodes"><strong>节点总结</strong> AI 做什么 / 人做什么 →</a>
       <a class="pill" href="./edit.html"><strong>可编辑文案</strong> 改字 / 复制 →</a>
       <a class="pill" href="./prototypes-editable.md"><strong>Markdown</strong> 全文 →</a>
     </div>
@@ -399,6 +448,80 @@
         <span><i class="f"></i>重点做：模型直接降本（筛选 / 参考价 / 路径建议）</span>
         <span><i class="l"></i>轻量做：陈列检索、草稿单、通知，不改责任边界</span>
         <span><i class="s"></i>基本不做：登录鉴权；选品中销售接管已取消</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="ai-nodes">
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>AI 优化节点</h2>
+          <p>与数据集成 / 数据加工同一张口径：每步只写清 AI 做什么、人做什么。客户不判集成或加工。</p>
+        </div>
+        <div class="hint">一页对照表</div>
+      </div>
+      <div class="sum-logic">
+        <article>
+          <h3><span class="num">1</span>客户自助选品</h3>
+          <p>客户在商场混选<strong>散装单数据项</strong>（AI 按条件筛）、<strong>场景元件</strong>、<strong>分析师数据包</strong>。包和元件只是分场景陈列，不是互斥订单类型。</p>
+        </article>
+        <article>
+          <h3><span class="num">2</span>参考报价后下单给销售</h3>
+          <p>系统给出<strong>简单参考报价</strong>（非正式成交价）。客户提交后生成草稿内部单并<strong>链接对口销售</strong>。选品过程中销售不接管。</p>
+        </article>
+        <article>
+          <h3><span class="num">3</span>销售判定后再进内部主链</h3>
+          <p>销售只拍板<strong>集成还是加工</strong>：标准项可 API → 集成；需分析师生产且线下交付 → 加工。沟通后可整单，或拆成两单。商场清单仅作草稿，内部仍走完整流程。</p>
+        </article>
+      </div>
+      <div class="sum-table-wrap">
+        <table class="sum">
+          <thead>
+            <tr>
+              <th style="width:22%">节点</th>
+              <th class="ai" style="width:39%">AI 做什么</th>
+              <th class="human" style="width:39%">人做什么</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a class="jump" href="#n1"><span class="nid skip">1</span>登录进入商场</a></td>
+              <td>不上模型。</td>
+              <td><span class="who">客户：</span>用现有企业账号进入商场，看到散装 / 元件 / 数据包三个货架。</td>
+            </tr>
+            <tr>
+              <td><a class="jump" href="#n2"><span class="nid">2</span>散装数据项 AI 筛选</a></td>
+              <td>从自然语言抽出商品、区域、频率、周期；命中标准目录；缺口追问；给出可勾选数据项（不向客户标集成/加工）。</td>
+              <td><span class="who">客户：</span>用自然语言提条件，勾选数据项加入购物车。</td>
+            </tr>
+            <tr>
+              <td><a class="jump" href="#n3"><span class="nid light">3</span>场景数据元件</a></td>
+              <td>场景名检索、相近场景推荐。组合清单已预生成，不现场编造。</td>
+              <td><span class="who">客户：</span>按采购 / 期货 / 期现等场景查看预组项并加购，可与散装、数据包混装。</td>
+            </tr>
+            <tr>
+              <td><a class="jump" href="#n4"><span class="nid light">4</span>分析师数据包</a></td>
+              <td>包名 / 商品检索，包内项说明摘要。不替代分析师打标打包。</td>
+              <td><span class="who">客户：</span>查看已打标数据包（如天然气包）并整包加入购物车。</td>
+            </tr>
+            <tr>
+              <td><a class="jump" href="#n5"><span class="nid">5</span>混装清单与简单报价</a></td>
+              <td>按目录价规汇总参考价；散装与包内重复项提示（不替客户删）。不生成正式合同价。</td>
+              <td><span class="who">客户：</span>确认混装清单后提交。本页不选择集成或加工。</td>
+            </tr>
+            <tr>
+              <td><a class="jump" href="#n6"><span class="nid light">6</span>下单链接销售</a></td>
+              <td>生成草稿内部单与去重摘要；写企微 / 邮件通知草稿。</td>
+              <td><span class="who">客户：</span>提交订单，可留一句需求。<span class="who">销售：</span>接收草稿单。选品过程中不插入接管。</td>
+            </tr>
+            <tr>
+              <td><a class="jump" href="#n7"><span class="nid">7</span>销售判定集成 / 加工</a></td>
+              <td>逐行判断是否标准数据项、能否 API；给出建议与证据；可生成拆单草稿（挂原商场单号）。</td>
+              <td><span class="who">销售：</span>与客户沟通后拍板——整单集成、整单加工，或拆成两部分分别走内部完整主链（集成从线索/筛选重做，加工从需求拆解重做）。</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </section>

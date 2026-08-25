@@ -79,6 +79,7 @@
       <a href="#e5"><strong>05 简单报价</strong><span>重点做</span></a>
       <a href="#e6"><strong>06 下单链接</strong><span>轻量做</span></a>
       <a href="#e7"><strong>07 销售判定</strong><span>重点做</span></a>
+      <a href="#esum"><strong>节点总结</strong><span>AI / 人对照</span></a>
     </nav>
 
     <section class="card" id="e1">
@@ -216,6 +217,28 @@ LNG 出厂价（华东/华南）· 核心
 【交接】集成从线索/筛选重做；加工从需求拆解重做；商场清单与参考价仅作草稿</textarea>
     </section>
 
+    <section class="card" id="esum">
+      <div class="card-head">
+        <h2>AI 优化节点｜对照表 <span class="tag focus">可贴进评审</span></h2>
+        <button class="btn secondary copy-one" type="button" data-target="tsum">复制本节点</button>
+      </div>
+      <p class="hint">与数据集成 / 数据加工同一口径：节点 · AI 做什么 · 人做什么</p>
+      <textarea id="tsum" style="min-height:280px">【AI 优化节点 · 数据元素商场】
+
+1. 客户自助选品：混选散装（AI 按条件筛）、场景元件、分析师数据包。包和元件只是分场景陈列。
+2. 参考报价后下单给销售：简单参考报价（非正式成交价）→ 草稿内部单链接对口销售。选品中销售不接管。
+3. 销售判定后再进内部主链：标准项可 API → 集成；需分析师生产且线下交付 → 加工。沟通后可整单或拆两单。
+
+节点 | AI 做什么 | 人做什么
+1 登录进入商场 | 不上模型 | 客户：用现有账号进入，看到三个货架
+2 散装数据项 AI 筛选 | 抽商品/区域/频率/周期，目录命中，缺口追问，给出可勾选数据项（不向客户标路径） | 客户：自然语言提条件并勾选加购
+3 场景数据元件 | 场景检索与相近推荐；组合已预生成，不现场编 | 客户：按采购/期货/期现查看预组项并加购，可混装
+4 分析师数据包 | 包名检索、包内说明摘要；不替代打标打包 | 客户：查看已打标包（如天然气包）并整包加购
+5 混装清单与简单报价 | 按价规汇总参考价；重复项提示。不生成正式合同价 | 客户：确认混装清单后提交，不选集成/加工
+6 下单链接销售 | 生成草稿内部单、去重摘要、销售通知草稿 | 客户：提交/可留言；销售：接收订单（选品中不接管）
+7 销售判定集成/加工 | 逐行判断标准项能否 API，建议集成或加工，生成拆单草稿 | 销售：沟通后拍板整单集成 / 整单加工 / 拆成两单，转入内部主链</textarea>
+    </section>
+
     <section class="card" id="pitch">
       <div class="card-head">
         <h2>附录｜评审口径</h2>
@@ -247,7 +270,7 @@ AI 优先打在散装筛选、参考报价、销售路径建议三处。
       });
     });
     document.getElementById('copyAll').addEventListener('click', () => {
-      const ids = ['t1','t2','t3','t4','t5','t6','t7','tp'];
+      const ids = ['t1','t2','t3','t4','t5','t6','t7','tsum','tp'];
       const all = ids.map((id) => document.getElementById(id).value).join('\n\n————\n\n');
       copyText(all);
     });
