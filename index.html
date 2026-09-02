@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>数据交付方案 · 本地总览</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #14201c; --ink-soft: #3a4a44; --navy: #1a4a40;
+      --navy-deep: #0f2f29; --amber: #c4922a; --line: #cfd8e3;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; color: var(--ink);
+      font-family: Manrope, "Noto Serif SC", sans-serif;
+      background:
+        radial-gradient(1100px 560px at 8% -8%, #d7ece4 0%, transparent 55%),
+        radial-gradient(900px 480px at 100% 0%, #f6ead4 0%, transparent 48%),
+        linear-gradient(180deg, #f3f7f5 0%, #f7f9fb 100%);
+      min-height: 100vh;
+    }
+    .wrap { width: min(920px, calc(100% - 40px)); margin: 0 auto; padding: 56px 0 72px; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--navy); font-weight: 700;
+    }
+    .eyebrow::before { content: ""; width: 28px; height: 2px; background: var(--amber); }
+    h1 {
+      font-family: "Noto Serif SC", serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 12px 0 10px; font-weight: 700;
+    }
+    .lede { color: var(--ink-soft); line-height: 1.7; max-width: 62ch; margin: 0 0 28px; }
+    .grid { display: grid; gap: 14px; }
+    a.card {
+      display: block; background: rgba(255,255,255,0.86);
+      border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px;
+      text-decoration: none; color: inherit;
+      box-shadow: 0 12px 32px rgba(18, 26, 36, 0.08);
+    }
+    a.card:hover { border-color: #9db4a8; }
+    a.card strong { display: block; font-family: "Noto Serif SC", serif; font-size: 1.2rem; margin-bottom: 6px; }
+    a.card span { color: var(--ink-soft); font-size: 14px; line-height: 1.55; }
+    .tag {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      border-radius: 999px; padding: 3px 9px; margin-bottom: 8px;
+      background: #e8f4ef; color: var(--navy);
+    }
+    .tag.out { background: #fff6e8; color: #8a5a12; }
+    .note { margin-top: 28px; font-size: 13px; color: var(--ink-soft); line-height: 1.6; }
+    code { background: #eef3f0; padding: 1px 6px; border-radius: 6px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="eyebrow">Local project</div>
+    <h1>数据交付三套方案</h1>
+    <p class="lede">本地打开即可。商场为客户选品入口，数据集成与数据加工为内部履约路径。</p>
+    <div class="grid">
+      <a class="card" href="docs/ai-data-marketplace-workflow/index.html">
+        <div class="tag">客户入口</div>
+        <strong>数据元素商场</strong>
+        <span>客户自助选品，参考报价后提交销售。集成或加工由销售判定。</span>
+      </a>
+      <a class="card" href="docs/ai-data-integration-workflow/index.html">
+        <div class="tag">内部履约</div>
+        <strong>数据集成</strong>
+        <span>标准数据项，可 API 交付。销售提需，PM 判定类型，系统报价出表。</span>
+      </a>
+      <a class="card" href="docs/ai-data-processing-workflow/index.html">
+        <div class="tag">内部履约</div>
+        <strong>数据加工</strong>
+        <span>无标准项，分析师生产、线下交付。需求结构化后出报价方案。</span>
+      </a>
+      <a class="card" href="docs/source-pdfs/README.md">
+        <div class="tag out">材料</div>
+        <strong>历史上传 PDF</strong>
+        <span>评估汇报、红期介绍、销售部画像、客户调研要点。便于本地引用。</span>
+      </a>
+      <a class="card" href="docs/internal-briefing/email-invite.md">
+        <div class="tag out">材料</div>
+        <strong>内部汇报邮件</strong>
+        <span>背景、目的、拟解决问题及会议邀约。</span>
+      </a>
+    </div>
+    <p class="note">终端执行 <code>./scripts/preview.sh</code>，浏览器打开 <code>http://127.0.0.1:8080</code>。</p>
+  </div>
+</body>
+</html>
