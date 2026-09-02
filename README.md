@@ -9,6 +9,7 @@
 | 数据集成 | 内部履约：标准数据项，可 API 交付 | [docs/ai-data-integration-workflow/index.html](docs/ai-data-integration-workflow/index.html) |
 | 数据加工 | 内部履约：分析师生产，线下交付 | [docs/ai-data-processing-workflow/index.html](docs/ai-data-processing-workflow/index.html) |
 | 数据元素商场 | 客户选品入口，下单后交销售 | [docs/ai-data-marketplace-workflow/index.html](docs/ai-data-marketplace-workflow/index.html) |
+| 历史上传 PDF | 评估汇报、红期介绍、销售画像、调研要点 | [docs/source-pdfs/README.md](docs/source-pdfs/README.md) |
 | 内部汇报邮件 | 邀约稿 | [docs/internal-briefing/email-invite.md](docs/internal-briefing/email-invite.md) |
 
 总览页：[index.html](index.html)
@@ -34,5 +35,6 @@ scripts/preview.sh                  本地预览
 docs/ai-data-integration-workflow/  数据集成
 docs/ai-data-processing-workflow/   数据加工
 docs/ai-data-marketplace-workflow/  数据元素商场
+docs/source-pdfs/                   历史上传 PDF
 docs/internal-briefing/             汇报邮件
 ```
