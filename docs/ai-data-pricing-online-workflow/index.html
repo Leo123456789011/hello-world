@@ -180,6 +180,7 @@
 
     .v-join.teal { background: var(--teal); }
     .v-join.copper { background: var(--copper); }
+    .v-join.stretch { height: auto; flex: 1; min-height: 36px; }
 
     .h-bar {
       width: 280px;
@@ -305,6 +306,7 @@
       flex-direction: column;
       align-items: center;
       padding-top: 14px;
+      height: 100%;
     }
 
     .gate {
@@ -805,7 +807,7 @@
             <div class="v-join"></div>
 
             <div class="split">
-              <div class="branch">
+              <div class="branch ready">
                 <div class="gate yes">是 · 已就绪</div>
                 <div class="pool">
                   <div class="kicker" style="color:var(--teal-deep);font-size:11px;font-weight:700;letter-spacing:.04em;">报价池</div>
@@ -813,6 +815,8 @@
                   <span>按既有价规占位，等待与新入库项合并后出最终方案报价。</span>
                   <span class="tag light">等待合并</span>
                 </div>
+                <div class="v-join teal stretch"></div>
+                <div class="notify" style="margin:0 0 4px;">等待新入库完成后合并</div>
               </div>
               <div class="branch">
                 <div class="gate no">否 · 未入库或未定价</div>
