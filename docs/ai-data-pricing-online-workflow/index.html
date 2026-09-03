@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>入库定价线上流程 · 五步审批与入库后汇总</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0c1b24;
+      --ink-soft: #243846;
+      --mist: #e8f1f4;
+      --paper: #f7fafb;
+      --teal: #0f6e6a;
+      --teal-deep: #0a4f4c;
+      --copper: #c46a2b;
+      --copper-soft: #f3e0d1;
+      --line: #c5d4db;
+      --ok: #1f7a4d;
+      --warn: #b45309;
+      --chip: #dce9ed;
+      --shadow: 0 18px 50px rgba(12, 27, 36, 0.12);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Manrope", "Noto Serif SC", sans-serif;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #d7ece9 0%, transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, #f3e0d1 0%, transparent 45%),
+        linear-gradient(180deg, #f4f8f9 0%, #eef4f6 40%, #f7fafb 100%);
+      min-height: 100vh;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .wrap { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+
+    header.hero { padding: 56px 0 28px; }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--teal-deep);
+      font-weight: 700;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 28px;
+      height: 2px;
+      background: var(--copper);
+    }
+
+    h1 {
+      font-family: "Noto Serif SC", serif;
+      font-size: clamp(2rem, 4vw, 3.1rem);
+      line-height: 1.2;
+      margin: 14px 0 12px;
+      max-width: 18ch;
+      font-weight: 700;
+    }
+
+    .lede {
+      max-width: 64ch;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--ink-soft);
+      margin: 0 0 22px;
+    }
+
+    .meta-row { display: flex; flex-wrap: wrap; gap: 10px; }
+
+    .pill {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(8px);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
+    .pill strong { color: var(--ink); font-weight: 700; }
+
+    section { margin: 28px 0 48px; }
+
+    .panel {
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(197, 212, 219, 0.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      padding: 22px 24px 10px;
+      flex-wrap: wrap;
+    }
+    .panel-head h2 {
+      font-family: "Noto Serif SC", serif;
+      margin: 0;
+      font-size: 1.45rem;
+    }
+    .panel-head p {
+      margin: 6px 0 0;
+      color: var(--ink-soft);
+      font-size: 0.95rem;
+      max-width: 62ch;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--teal-deep);
+      background: #dff1ef;
+      border-radius: 999px;
+      padding: 6px 12px;
+      white-space: nowrap;
+    }
+
+    .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 0 24px 18px;
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      margin-right: 8px;
+      vertical-align: -1px;
+    }
+    .legend .l-human::before { background: #fff; border: 1px solid var(--line); }
+    .legend .l-ai::before { background: #fff8f2; border: 1px solid #e2b48d; }
+    .legend .l-sys::before { background: #e7f4f2; border: 1px solid #9ec9c4; }
+    .legend .l-end::before { background: var(--ink); }
+
+    .flow-wrap {
+      padding: 8px 16px 28px;
+      overflow-x: auto;
+    }
+
+    .flow {
+      min-width: 1080px;
+      display: grid;
+      justify-items: center;
+      gap: 0;
+    }
+
+    .row {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      align-items: stretch;
+    }
+
+    .v-join {
+      width: 2px;
+      height: 22px;
+      background: var(--ink);
+      margin: 0 auto;
+    }
+
+    .v-join.teal { background: var(--teal); }
+    .v-join.copper { background: var(--copper); }
+
+    .h-bar {
+      width: 280px;
+      height: 2px;
+      background: var(--ink);
+      margin: 0 auto;
+      position: relative;
+    }
+    .h-bar::before, .h-bar::after {
+      content: "";
+      position: absolute;
+      top: -5px;
+      width: 2px;
+      height: 12px;
+      background: var(--ink);
+    }
+    .h-bar::before { left: 0; }
+    .h-bar::after { right: 0; }
+
+    .card {
+      cursor: pointer;
+      background: #fff;
+      border: 1.2px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 16px;
+      min-width: 200px;
+      text-align: left;
+      box-shadow: 0 8px 20px rgba(12, 27, 36, 0.06);
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    .card:hover, .card:focus-within {
+      transform: translateY(-2px);
+      filter: brightness(1.03);
+    }
+    .card.ai {
+      background: #fff8f2;
+      border-color: #e2b48d;
+    }
+    .card.sys {
+      background: #e7f4f2;
+      border-color: #9ec9c4;
+    }
+    .card.end {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: #fff;
+      text-align: center;
+      min-width: 280px;
+    }
+    .card .kicker {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--teal-deep);
+      text-transform: uppercase;
+    }
+    .card.ai .kicker { color: var(--copper); }
+    .card.end .kicker { color: rgba(255,255,255,0.7); }
+    .card h3 {
+      font-family: "Noto Serif SC", serif;
+      font-size: 15px;
+      margin: 4px 0 2px;
+    }
+    .card p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--ink-soft);
+      line-height: 1.45;
+    }
+    .card.end p { color: rgba(255,255,255,0.78); }
+
+    .tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 2px 8px;
+      margin-top: 8px;
+    }
+    .tag.do { background: #f3e0d1; color: #8a4a14; }
+    .tag.light { background: #dff1ef; color: var(--teal-deep); }
+    .tag.skip { background: #eef1f3; color: #5b6b73; }
+    .card.end .tag { background: rgba(255,255,255,0.12); color: #fff; }
+
+    .diamond {
+      width: 220px;
+      text-align: center;
+      background: #fff;
+      border: 1.5px dashed var(--teal);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .diamond span {
+      display: block;
+      font-weight: 500;
+      color: var(--ink-soft);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .split {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin-top: 8px;
+      position: relative;
+    }
+    .split::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 25%;
+      right: 25%;
+      height: 2px;
+      background: var(--ink);
+    }
+
+    .branch {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 14px;
+    }
+
+    .gate {
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 5px 12px;
+      margin-bottom: 12px;
+    }
+    .gate.yes { background: #e5f6ea; color: var(--ok); }
+    .gate.no { background: #fff1e4; color: var(--warn); }
+
+    .lane {
+      width: 100%;
+      max-width: 460px;
+      background: linear-gradient(180deg, #f7fafb, #fff);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px 14px 8px;
+    }
+    .lane-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 0 4px;
+    }
+    .lane-head strong {
+      font-family: "Noto Serif SC", serif;
+      font-size: 14px;
+    }
+    .lane-head em {
+      font-style: normal;
+      font-size: 11px;
+      color: var(--ink-soft);
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px 10px;
+      margin-bottom: 6px;
+    }
+    .step .idx {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      background: var(--ink);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .step .who { font-size: 11px; color: var(--teal-deep); font-weight: 700; }
+    .step .what { font-size: 13px; font-weight: 600; }
+    .step .act { font-size: 11px; color: var(--ink-soft); }
+    .notify {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--teal-deep);
+      margin: 2px 0 6px;
+    }
+    .notify::before, .notify::after {
+      content: "";
+      width: 18px;
+      height: 1px;
+      background: #9ec9c4;
+    }
+
+    .ai-strip {
+      width: 100%;
+      max-width: 460px;
+      margin-top: 8px;
+      background: linear-gradient(135deg, #fff8f2, #fff);
+      border: 1px solid #e2b48d;
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .ai-strip h4 {
+      margin: 0 0 8px;
+      font-size: 12px;
+      color: var(--copper);
+      letter-spacing: 0.04em;
+    }
+    .ai-chain {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .ai-chain b {
+      background: #fff;
+      border: 1px solid #e8c3a2;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .ai-chain i {
+      font-style: normal;
+      color: var(--copper);
+      font-weight: 700;
+    }
+
+    .pool {
+      width: 100%;
+      max-width: 360px;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background:
+        linear-gradient(160deg, rgba(15,110,106,0.08), transparent 55%),
+        #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 22px 20px;
+      text-align: center;
+    }
+    .pool strong {
+      font-family: "Noto Serif SC", serif;
+      font-size: 1.15rem;
+      display: block;
+      margin: 6px 0;
+    }
+    .pool span { color: var(--ink-soft); font-size: 13px; line-height: 1.55; }
+
+    .table-wrap { padding: 0 24px 24px; overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    th, td {
+      text-align: left;
+      padding: 11px 12px;
+      border-bottom: 1px solid #e4eef1;
+      vertical-align: top;
+    }
+    th {
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      color: var(--teal-deep);
+      background: #f3f8f9;
+    }
+    td.ai-cell { font-weight: 700; }
+    td.ai-cell.skip { color: #5b6b73; }
+    td.ai-cell.do { color: var(--copper); }
+    td.ai-cell.light { color: var(--teal-deep); }
+
+    .as-is {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 18px;
+      padding: 0 24px 24px;
+      align-items: start;
+    }
+    @media (max-width: 800px) {
+      .as-is { grid-template-columns: 1fr; }
+      h1 { max-width: none; }
+    }
+    .as-is img {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+    .as-is .note {
+      color: var(--ink-soft);
+      font-size: 14px;
+      line-height: 1.65;
+      margin: 0;
+    }
+
+    .nodes { display: grid; gap: 22px; }
+
+    .node {
+      scroll-margin-top: 24px;
+      background: rgba(255,255,255,0.82);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .node-top {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 0;
+    }
+    @media (max-width: 900px) {
+      .node-top { grid-template-columns: 1fr; }
+    }
+
+    .node-info {
+      padding: 26px 26px 22px;
+      border-right: 1px solid var(--line);
+      background:
+        linear-gradient(160deg, rgba(15,110,106,0.06), transparent 55%),
+        #fff;
+    }
+    @media (max-width: 900px) {
+      .node-info { border-right: 0; border-bottom: 1px solid var(--line); }
+    }
+
+    .node-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--teal-deep);
+      text-transform: uppercase;
+    }
+    .node-tag .n {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      background: var(--ink);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+    }
+
+    .node-info h3 {
+      font-family: "Noto Serif SC", serif;
+      font-size: 1.35rem;
+      margin: 10px 0 8px;
+    }
+    .node-info .goal {
+      color: var(--ink-soft);
+      line-height: 1.65;
+      margin: 0 0 16px;
+      font-size: 0.96rem;
+    }
+
+    .ai-box {
+      background: linear-gradient(135deg, #fff8f2, #fff);
+      border: 1px solid #e8c3a2;
+      border-radius: 14px;
+      padding: 14px 14px 10px;
+    }
+    .ai-box.mute {
+      background: #f7fafb;
+      border-color: var(--line);
+    }
+    .ai-box h4 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: var(--copper);
+      letter-spacing: 0.04em;
+    }
+    .ai-box.mute h4 { color: var(--ink-soft); }
+    .ai-box ul { margin: 0; padding: 0; list-style: none; }
+    .ai-box li {
+      position: relative;
+      padding: 7px 0 7px 16px;
+      font-size: 13.5px;
+      line-height: 1.45;
+      border-bottom: 1px dashed #efd5bf;
+    }
+    .ai-box.mute li { border-bottom-color: #dce7ec; }
+    .ai-box li:last-child { border-bottom: 0; }
+    .ai-box li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 14px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--copper);
+    }
+    .ai-box.mute li::before { background: #8aa3ab; }
+
+    .change {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .change div {
+      background: var(--paper);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 12.5px;
+      line-height: 1.45;
+      color: var(--ink-soft);
+    }
+    .change strong {
+      display: block;
+      color: var(--ink);
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+
+    .proto {
+      padding: 18px;
+      background: linear-gradient(180deg, #eef4f6, #f7fafb);
+      display: flex;
+      align-items: stretch;
+    }
+    .device {
+      width: 100%;
+      background: #0c1b24;
+      border-radius: 16px;
+      padding: 10px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+    }
+    .device-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: rgba(255,255,255,0.72);
+      font-size: 11px;
+      padding: 2px 6px 10px;
+    }
+    .dots { display: flex; gap: 5px; }
+    .dots i {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      display: block;
+    }
+    .screen {
+      background: #f4f7f8;
+      border-radius: 12px;
+      min-height: 360px;
+      overflow: hidden;
+      color: var(--ink);
+    }
+    .app-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: #fff;
+      border-bottom: 1px solid #e2ebef;
+    }
+    .brand {
+      font-family: "Noto Serif SC", serif;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .brand em {
+      font-style: normal;
+      color: var(--teal);
+      margin-left: 6px;
+      font-family: "Manrope", sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .chip {
+      background: var(--chip);
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 11px;
+      color: var(--ink-soft);
+    }
+
+    .todo {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .todo-item {
+      background: #fff;
+      border: 1px solid #dce7ec;
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .todo-item.due { border-color: #e8c3a2; background: #fff8f2; }
+    .todo-item .meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--ink-soft);
+      margin-bottom: 4px;
+    }
+    .todo-item strong { font-size: 13.5px; }
+    .btn {
+      border: 0;
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: default;
+    }
+    .btn.teal { background: var(--teal); color: #fff; }
+    .btn.copper { background: var(--copper); color: #fff; }
+    .btn.ghost { background: #eef3f4; color: var(--ink-soft); }
+
+    .quote {
+      padding: 14px;
+    }
+    .quote .banner {
+      background: #fff8f2;
+      border: 1px solid #e8c3a2;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12.5px;
+      margin-bottom: 12px;
+    }
+    .quote table { font-size: 12px; }
+    .quote .total {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 4px 0;
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .quote .total span:last-child { color: var(--copper); }
+
+    footer.links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 0 0 56px;
+    }
+    footer.links a {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.75);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+    }
+    footer.links a:hover { border-color: var(--teal); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="eyebrow">内部支撑 · 入库定价</div>
+      <h1>未入库、未定价，先走线上五步</h1>
+      <p class="lede">
+        集成或加工项目里，AI 先筛一批数据项。已入库且已定价的直接进报价池；未入库或未定价的，由分析师发起五步线上流程，系统催办到各自审批人。<strong>五步里 AI 不插手。</strong>全部入库完成后，AI 只做：新入库提醒 → 接收 → 价格汇总 → 合并此前已入库报价。
+      </p>
+      <div class="meta-row">
+        <div class="pill"><strong>触发</strong> 集成 / 加工项目筛选</div>
+        <div class="pill"><strong>五步</strong> 负责人不变，全线上化</div>
+        <div class="pill"><strong>AI</strong> 只做入库后汇总合并</div>
+        <div class="pill"><a href="../../index.html"><strong>返回</strong> 总览</a></div>
+      </div>
+    </header>
+
+    <section>
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>主路径流程图</h2>
+            <p>与数据集成「报价出表」同一套视觉语言。左侧就绪直通，右侧五步审批，汇合后才出最终方案报价。</p>
+          </div>
+          <div class="hint">点击色块可看节点说明</div>
+        </div>
+        <div class="legend">
+          <span class="l-ai">AI 节点（筛选 / 入库后汇总）</span>
+          <span class="l-human">人审节点（五步，AI 不做）</span>
+          <span class="l-sys">系统催办（规则提醒，不上模型）</span>
+          <span class="l-end">最终方案报价</span>
+        </div>
+        <div class="flow-wrap">
+          <div class="flow">
+            <div class="row">
+              <a class="card" href="#n1">
+                <div class="kicker">项目 A</div>
+                <h3>数据集成项目</h3>
+                <p>标准项 · 可 API 交付</p>
+              </a>
+              <a class="card" href="#n1">
+                <div class="kicker">项目 B</div>
+                <h3>数据加工项目</h3>
+                <p>分析师生产 · 线下交付</p>
+              </a>
+            </div>
+            <div class="v-join"></div>
+            <div class="h-bar"></div>
+            <div class="v-join"></div>
+            <a class="card ai" href="#n1">
+              <div class="kicker">沿用现有筛选</div>
+              <h3>AI 初筛一批数据项</h3>
+              <p>分析师可在结果中补入未入库 / 未定价项</p>
+              <span class="tag do">重点做</span>
+            </a>
+            <div class="v-join"></div>
+            <div class="diamond">是否已入库且已定价？<span>每一项单独判断，可混在同一方案</span></div>
+            <div class="v-join"></div>
+
+            <div class="split">
+              <div class="branch">
+                <div class="gate yes">是 · 已就绪</div>
+                <div class="pool">
+                  <div class="kicker" style="color:var(--teal-deep);font-size:11px;font-weight:700;letter-spacing:.04em;">报价池</div>
+                  <strong>进入已入库报价池</strong>
+                  <span>按既有价规占位，等待与新入库项合并后出最终方案报价。</span>
+                  <span class="tag light">等待合并</span>
+                </div>
+              </div>
+              <div class="branch">
+                <div class="gate no">否 · 未入库或未定价</div>
+                <a class="card" href="#n2" style="margin-bottom:10px;width:100%;max-width:460px;">
+                  <div class="kicker">发起人</div>
+                  <h3>分析师发起五步线上流程</h3>
+                  <p>每一项都走完全部五步，不跳过 2–3</p>
+                  <span class="tag skip">AI 基本不做</span>
+                </a>
+                <div class="lane">
+                  <div class="lane-head">
+                    <strong>线上五步 · 负责人不变</strong>
+                    <em>完成后系统提醒下一审批人</em>
+                  </div>
+                  <div class="step">
+                    <div class="idx">1</div>
+                    <div>
+                      <div class="who">分析师</div>
+                      <div class="what">新增数据项</div>
+                    </div>
+                    <div class="act">入库</div>
+                  </div>
+                  <div class="notify">系统提醒 → 专职副总监</div>
+                  <div class="step">
+                    <div class="idx">2</div>
+                    <div>
+                      <div class="who">专职副总监</div>
+                      <div class="what">进入定价基准维护页</div>
+                    </div>
+                    <div class="act">维护定价</div>
+                  </div>
+                  <div class="notify">系统提醒 → 产品</div>
+                  <div class="step">
+                    <div class="idx">3</div>
+                    <div>
+                      <div class="who">产品</div>
+                      <div class="what">审核</div>
+                    </div>
+                    <div class="act">线上审批</div>
+                  </div>
+                  <div class="notify">系统提醒 → 分析师主管</div>
+                  <div class="step">
+                    <div class="idx">4</div>
+                    <div>
+                      <div class="who">分析师主管</div>
+                      <div class="what">数据项定价</div>
+                    </div>
+                    <div class="act">数据项定价</div>
+                  </div>
+                  <div class="notify">系统提醒 → 专职副总监</div>
+                  <div class="step">
+                    <div class="idx">5</div>
+                    <div>
+                      <div class="who">专职副总监</div>
+                      <div class="what">审核</div>
+                    </div>
+                    <div class="act">线上审批</div>
+                  </div>
+                </div>
+                <div class="v-join copper"></div>
+                <a class="ai-strip" href="#n3">
+                  <h4>AI 只在入库完成后介入</h4>
+                  <div class="ai-chain">
+                    <b>新入库提醒</b><i>→</i>
+                    <b>接收</b><i>→</i>
+                    <b>价格汇总</b><i>→</i>
+                    <b>合并已入库报价</b>
+                  </div>
+                  <span class="tag do">重点做</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="v-join"></div>
+            <a class="card end" href="#n3">
+              <div class="kicker">方案输出</div>
+              <h3>最终方案报价</h3>
+              <p>已就绪项 + 新入库项，一张报价</p>
+              <span class="tag">对接集成 05 / 加工 05</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>现状五步（负责人保留）</h2>
+            <p>线上化只改「动作发生在系统里、完成后自动催下一岗」，不改谁做、也不让 AI 代审。</p>
+          </div>
+        </div>
+        <div class="as-is">
+          <img src="current-as-is.png" alt="现状：新增数据项入库到定价的五步表，红框标出负责人列" />
+          <p class="note">红框列为现岗：分析师 → 专职副总监 → 产品 → 分析师主管 → 专职副总监。每一项未入库或未定价，五步都要走完，不能因为「只是没定价」就跳过基准维护与产品审核。</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>步骤</th>
+                <th>事项</th>
+                <th>负责人</th>
+                <th>动作</th>
+                <th>AI</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>新增数据项</td>
+                <td>分析师</td>
+                <td>入库</td>
+                <td class="ai-cell skip">基本不做</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>新增数据类型进入定价基准维护页面</td>
+                <td>专职副总监</td>
+                <td>维护定价</td>
+                <td class="ai-cell skip">基本不做</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>审核</td>
+                <td>产品</td>
+                <td>线上审批</td>
+                <td class="ai-cell skip">基本不做</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>数据项定价</td>
+                <td>分析师主管</td>
+                <td>数据项定价</td>
+                <td class="ai-cell skip">基本不做</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>审核</td>
+                <td>专职副总监</td>
+                <td>线上审批</td>
+                <td class="ai-cell skip">基本不做</td>
+              </tr>
+              <tr>
+                <td>—</td>
+                <td>步骤完成后通知下一审批人</td>
+                <td>系统</td>
+                <td>待办 / 消息催办</td>
+                <td class="ai-cell light">轻量做 · 规则提醒，不上模型</td>
+              </tr>
+              <tr>
+                <td>入库后</td>
+                <td>新入库数据提醒 → 接收 → 价格汇总 → 合并已入库报价</td>
+                <td>系统 / 分析师确认</td>
+                <td>汇总进方案报价</td>
+                <td class="ai-cell do">重点做</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="nodes">
+      <article class="node" id="n1">
+        <div class="node-top">
+          <div class="node-info">
+            <div class="node-tag"><span class="n">01</span> 触发与分路</div>
+            <h3>项目里先筛，再按是否就绪拆开</h3>
+            <p class="goal">集成、加工项目都可以触发。AI 仍做现有的一批初筛；分析师可把未入库、未定价项补进清单。已就绪的进报价池占位，未就绪的由分析师发起五步，不在筛选里卡死整单。</p>
+            <div class="ai-box">
+              <h4>AI 介入要素</h4>
+              <ul>
+                <li>沿用集成 / 加工已有筛选，标出「未入库」「未定价」</li>
+                <li>同一方案允许混装：部分就绪、部分走五步</li>
+                <li>不在本节点生成正式价；未就绪项不计最终报价</li>
+              </ul>
+            </div>
+            <div class="change">
+              <div><strong>现状痛点</strong>未入库或未定价项进不了集成报价，线下追人维护价规</div>
+              <div><strong>变化后</strong>整单继续；缺口项拉起线上五步，就绪项先入池</div>
+            </div>
+          </div>
+          <div class="proto">
+            <div class="device">
+              <div class="device-bar"><div class="dots"><i></i><i></i><i></i></div><span>筛选结果 · 就绪状态</span></div>
+              <div class="screen">
+                <div class="app-top">
+                  <div class="brand">甲醇方案<em>集成项目</em></div>
+                  <span class="chip">已选 5 项</span>
+                </div>
+                <div class="todo">
+                  <div class="todo-item">
+                    <div class="meta"><span>DATA-MEOH-SPOT</span><span style="color:var(--ok);font-weight:700;">已入库 · 已定价</span></div>
+                    <strong>甲醇市场价 · 华东 · 日度</strong>
+                  </div>
+                  <div class="todo-item">
+                    <div class="meta"><span>INFO-MEOH-WK</span><span style="color:var(--ok);font-weight:700;">已入库 · 已定价</span></div>
+                    <strong>甲醇周评 · 即期 1 年</strong>
+                  </div>
+                  <div class="todo-item due">
+                    <div class="meta"><span>DATA-MEOH-INV</span><span style="color:var(--warn);font-weight:700;">未入库</span></div>
+                    <strong>甲醇社会库存 · 周度</strong>
+                  </div>
+                  <div class="todo-item due">
+                    <div class="meta"><span>DATA-MEOH-PORT</span><span style="color:var(--warn);font-weight:700;">已入库 · 未定价</span></div>
+                    <strong>甲醇港口库存 · 日度</strong>
+                  </div>
+                  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px;">
+                    <span class="btn ghost">已就绪 2 项入池</span>
+                    <span class="btn copper">对缺口项发起入库定价</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="node" id="n2">
+        <div class="node-top">
+          <div class="node-info">
+            <div class="node-tag"><span class="n">02</span> 线上五步</div>
+            <h3>流程全线上，AI 不代审、不改岗</h3>
+            <p class="goal">分析师发起后，步骤 1–5 仍由原负责人完成。每一步提交，系统把待办推到下一审批人。产品审核、两级副总监动作都不上模型。未入库与未定价同等对待：五步走完，不跳过基准维护与产品审核。</p>
+            <div class="ai-box mute">
+              <h4>AI 明确不做</h4>
+              <ul>
+                <li>不代填入库、不定价、不写审批意见</li>
+                <li>不根据「只差定价」建议跳过步骤 2、3</li>
+                <li>催办只用规则通知（待办、企微/邮件），不上模型生成话术替代审批</li>
+              </ul>
+            </div>
+            <div class="change">
+              <div><strong>现状痛点</strong>线下转交，下一岗不知道轮到自己</div>
+              <div><strong>变化后</strong>提交即提醒对应审批人，责任人与动作与现表一致</div>
+            </div>
+          </div>
+          <div class="proto">
+            <div class="device">
+              <div class="device-bar"><div class="dots"><i></i><i></i><i></i></div><span>审批人待办 · 系统催办</span></div>
+              <div class="screen">
+                <div class="app-top">
+                  <div class="brand">入库定价<em>待办</em></div>
+                  <span class="chip">专职副总监</span>
+                </div>
+                <div class="todo">
+                  <div class="todo-item due">
+                    <div class="meta"><span>步骤 2 · 维护定价</span><span>来自 分析师 · 10:24</span></div>
+                    <strong>甲醇社会库存 进入定价基准维护</strong>
+                    <div class="meta" style="margin-top:6px;"><span>项目 CL-2026-0812</span><span class="btn teal">去维护</span></div>
+                  </div>
+                  <div class="todo-item">
+                    <div class="meta"><span>步骤 5 · 线上审批</span><span>来自 分析师主管 · 昨日</span></div>
+                    <strong>甲醇港口库存 定价审核</strong>
+                    <div class="meta" style="margin-top:6px;"><span>步骤 4 已完成</span><span class="btn ghost">打开审批</span></div>
+                  </div>
+                  <p style="margin:8px 4px 0;font-size:12px;color:var(--ink-soft);line-height:1.5;">系统按步骤把待办推到本岗。AI 不出现在审批页。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="node" id="n3">
+        <div class="node-top">
+          <div class="node-info">
+            <div class="node-tag"><span class="n">03</span> 入库后汇总</div>
+            <h3>提醒、接收、汇总，再合并已入库报价</h3>
+            <p class="goal">五步全部通过，新数据才算入库完成。此时 AI 才介入：提醒项目侧有新入库数据，接收后按价规做价格汇总，并与此前已就绪报价池合并，输出一张最终方案报价（对接集成 05 / 加工 05）。</p>
+            <div class="ai-box">
+              <h4>AI 介入要素（仅此段）</h4>
+              <ul>
+                <li>新入库数据提醒：哪些项刚完成步骤 5</li>
+                <li>接收：纳入本方案，而不是另开一单</li>
+                <li>价格汇总：按新入库项的已审定价计算</li>
+                <li>合并：加上筛选时已入池的就绪项报价</li>
+              </ul>
+            </div>
+            <div class="change">
+              <div><strong>现状痛点</strong>新项入库后仍要人工回填方案、重算整单</div>
+              <div><strong>变化后</strong>入库即提醒，确认接收后自动合并出最终报价</div>
+            </div>
+          </div>
+          <div class="proto">
+            <div class="device">
+              <div class="device-bar"><div class="dots"><i></i><i></i><i></i></div><span>AI · 入库后价格汇总</span></div>
+              <div class="screen">
+                <div class="app-top">
+                  <div class="brand">方案报价<em>待合并</em></div>
+                  <span class="chip">CL-2026-0812</span>
+                </div>
+                <div class="quote">
+                  <div class="banner">新入库 2 项已完成五步审批。接收后将与已就绪 2 项合并为一张方案报价。</div>
+                  <table>
+                    <thead>
+                      <tr><th>来源</th><th>数据项</th><th>状态</th><th>参考价</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>已入库池</td><td>甲醇市场价</td><td>就绪</td><td>¥ 18,000</td></tr>
+                      <tr><td>已入库池</td><td>甲醇周评</td><td>就绪</td><td>¥ 12,000</td></tr>
+                      <tr><td>新入库</td><td>甲醇社会库存</td><td>五步通过</td><td>¥ 9,600</td></tr>
+                      <tr><td>新入库</td><td>甲醇港口库存</td><td>五步通过</td><td>¥ 8,400</td></tr>
+                    </tbody>
+                  </table>
+                  <div class="total"><span>合并后方案报价</span><span>¥ 48,000</span></div>
+                  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+                    <span class="btn ghost">稍后处理</span>
+                    <span class="btn copper">接收并合并</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <footer class="links">
+      <a href="../../index.html">总览</a>
+      <a href="../ai-data-integration-workflow/index.html">数据集成（报价出表）</a>
+      <a href="../ai-data-processing-workflow/index.html">数据加工</a>
+      <a href="../ai-data-marketplace-workflow/index.html">数据元素商场</a>
+    </footer>
+  </div>
+</body>
+</html>
