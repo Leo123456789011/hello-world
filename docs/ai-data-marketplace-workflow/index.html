@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>数据元素商场 · 面向客户的数据需求鱼骨图</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #14201c;
+      --ink-soft: #3a4a44;
+      --navy: #1a4a40;
+      --navy-deep: #0f2f29;
+      --amber: #c4922a;
+      --amber-soft: #f6ead4;
+      --line: #cfd8e3;
+      --ok: #1f7a4d;
+      --mute: #6b7788;
+      --skip: #8a5a3a;
+      --shadow: 0 18px 50px rgba(18, 26, 36, 0.12);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Manrope", "Noto Serif SC", sans-serif;
+      background:
+        radial-gradient(1100px 560px at 8% -8%, #d7ece4 0%, transparent 55%),
+        radial-gradient(900px 480px at 100% 0%, #f6ead4 0%, transparent 48%),
+        linear-gradient(180deg, #f3f7f5 0%, #eef3f1 42%, #f7f9fb 100%);
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    header.hero { padding: 52px 0 24px; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--navy); font-weight: 700;
+    }
+    .eyebrow::before { content: ""; width: 28px; height: 2px; background: var(--amber); }
+    h1 {
+      font-family: "Noto Serif SC", serif;
+      font-size: clamp(1.9rem, 3.8vw, 2.9rem);
+      line-height: 1.22; margin: 14px 0 12px; max-width: 18ch; font-weight: 700;
+    }
+    .lede {
+      max-width: 72ch; font-size: 1.02rem; line-height: 1.7;
+      color: var(--ink-soft); margin: 0 0 20px;
+    }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .pill {
+      border: 1px solid var(--line); background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(8px); border-radius: 999px; padding: 8px 14px;
+      font-size: 13px; color: var(--ink-soft);
+    }
+    .pill strong { color: var(--ink); }
+    .pill.skip { border-color: #e2c4ae; background: #fff7f0; color: var(--skip); }
+    .pill.focus { border-color: #b7d4c8; background: #e8f4ef; color: var(--navy-deep); }
+    .toc {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+      margin-top: 22px;
+    }
+    .toc a {
+      display: block; background: rgba(255,255,255,0.78);
+      border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .toc a:hover { transform: translateY(-2px); border-color: #9db4d0; }
+    .toc strong { display: block; font-size: 13px; margin-bottom: 4px; }
+    .toc span { font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
+    .toc a.skip-node { border-style: dashed; opacity: 0.92; }
+    section { margin: 28px 0 48px; }
+    .panel {
+      background: rgba(255,255,255,0.8); border: 1px solid rgba(207,216,227,0.95);
+      border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;
+    }
+    .panel-head {
+      display: flex; justify-content: space-between; align-items: end;
+      gap: 16px; padding: 22px 24px 10px; flex-wrap: wrap;
+    }
+    .panel-head h2 {
+      font-family: "Noto Serif SC", serif; margin: 0; font-size: 1.4rem;
+    }
+    .panel-head p { margin: 6px 0 0; color: var(--ink-soft); font-size: 0.95rem; max-width: 70ch; }
+    .hint {
+      font-size: 12px; color: var(--navy-deep); background: #dff1ea;
+      border-radius: 999px; padding: 6px 12px; white-space: nowrap;
+    }
+    .fishbone-wrap { padding: 8px 12px 24px; overflow-x: auto; }
+    .fishbone { min-width: 1080px; }
+    .spine { stroke: var(--ink); stroke-width: 10; stroke-linecap: round; }
+    .rib { stroke: #6f849c; stroke-width: 3.5; }
+    .bone {
+      fill: #fff; stroke: #b8c6d6; stroke-width: 1.5;
+      transition: transform 0.2s ease, stroke 0.2s ease;
+    }
+    a.bone-link:hover .bone { stroke: var(--navy); transform: translateY(-2px); }
+    .bone.focus { stroke: var(--navy); fill: #e8f4ef; }
+    .bone.light { stroke: #c9b087; fill: #fffaf2; }
+    .bone.skip { stroke: #d0b09a; fill: #faf6f2; stroke-dasharray: 5 4; }
+    .bone-title { font-family: "Noto Serif SC", serif; font-size: 13.5px; fill: var(--ink); font-weight: 700; }
+    .bone-sub { font-size: 11px; fill: var(--ink-soft); }
+    .bone-tag { font-size: 10.5px; font-weight: 700; }
+    .tag-focus { fill: var(--navy); }
+    .tag-light { fill: var(--amber); }
+    .tag-skip { fill: var(--skip); }
+    .head-shape { fill: var(--navy-deep); }
+    .head-text { fill: #fff; font-family: "Noto Serif SC", serif; font-size: 15px; font-weight: 700; }
+    .head-sub { fill: #c9d7e8; font-size: 11px; }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 14px; padding: 0 24px 20px;
+      font-size: 12.5px; color: var(--ink-soft);
+    }
+    .legend i {
+      display: inline-block; width: 12px; height: 12px; border-radius: 3px;
+      margin-right: 6px; vertical-align: -1px; border: 1px solid transparent;
+    }
+    .legend .f { background: #e8f4ef; border-color: var(--navy); }
+    .legend .l { background: #fffaf2; border-color: #c9b087; }
+    .legend .s { background: #faf6f2; border-color: #d0b09a; border-style: dashed; }
+
+    .node {
+      margin: 22px 0;
+      background: rgba(255,255,255,0.82);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      scroll-margin-top: 18px;
+    }
+    .node-top { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 0; }
+    .node-info { padding: 26px 28px 28px; }
+    .node-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+      color: var(--navy-deep); margin-bottom: 10px;
+    }
+    .node-tag .n {
+      background: var(--navy-deep); color: #fff; border-radius: 999px;
+      padding: 3px 9px; font-size: 11px;
+    }
+    .node-tag .badge {
+      border-radius: 999px; padding: 3px 9px; font-size: 11px;
+      border: 1px solid currentColor;
+    }
+    .badge.focus { color: var(--navy); background: #e8f4ef; }
+    .badge.light { color: #8a5a12; background: #fff6e8; }
+    .badge.skip { color: var(--skip); background: #fff4ec; }
+    .node-info h3 {
+      font-family: "Noto Serif SC", serif; margin: 0 0 8px; font-size: 1.35rem;
+    }
+    .goal { color: var(--ink-soft); line-height: 1.65; margin: 0 0 14px; font-size: 0.95rem; }
+    .ai-box {
+      background: #f3f7fb; border: 1px solid #d5e0ec; border-radius: 14px;
+      padding: 14px 16px; margin-bottom: 12px;
+    }
+    .ai-box h4 { margin: 0 0 8px; font-size: 13px; color: var(--navy-deep); }
+    .ai-box ul { margin: 0; padding-left: 18px; color: var(--ink-soft); font-size: 13px; line-height: 1.55; }
+    .ai-box.skip-box { background: #fbf6f2; border-color: #e5cfc0; }
+    .ai-box.skip-box h4 { color: var(--skip); }
+    .change {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    .change div {
+      background: #fff; border: 1px solid var(--line); border-radius: 12px;
+      padding: 10px 12px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.45;
+    }
+    .change strong { display: block; color: var(--ink); margin-bottom: 4px; font-size: 12px; }
+    .proto {
+      background: linear-gradient(160deg, #1a4a40 0%, #243f3a 40%, #2a3342 100%);
+      padding: 22px; display: flex; align-items: center; justify-content: center;
+    }
+    .device {
+      width: min(100%, 430px); background: #f7f9fb; border-radius: 18px;
+      overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.28);
+      opacity: 0; transform: translateY(12px);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+    .device.in { opacity: 1; transform: translateY(0); }
+    .device-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px; background: #fff; border-bottom: 1px solid #e4ebf2;
+      font-size: 12px; color: var(--mute);
+    }
+    .dots { display: flex; gap: 5px; }
+    .dots i { width: 8px; height: 8px; border-radius: 50%; background: #d5dde8; }
+    .dots i:nth-child(1) { background: #ef9a9a; }
+    .dots i:nth-child(2) { background: #ffe082; }
+    .dots i:nth-child(3) { background: #a5d6a7; }
+    .screen { background: #f7f9fb; }
+    .app-top {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 14px 8px; gap: 10px;
+    }
+    .brand { font-family: "Noto Serif SC", serif; font-weight: 700; font-size: 15px; }
+    .brand em { display: block; font-style: normal; font-family: Manrope, sans-serif;
+      font-size: 11px; color: var(--mute); font-weight: 500; margin-top: 2px; }
+    .chip {
+      display: inline-block; background: #e8f1ed; color: var(--navy-deep);
+      border-radius: 999px; padding: 4px 10px; font-size: 11px; font-weight: 700;
+    }
+    .chip.warn { background: #fff1e4; color: #8a5a12; }
+    .chip.skip { background: #f4ebe4; color: var(--skip); }
+    .card-block {
+      margin: 8px 14px 12px; background: #fff; border: 1px solid #e0e7ef;
+      border-radius: 12px; padding: 12px; font-size: 12.5px;
+    }
+    .card-block .row {
+      display: grid; grid-template-columns: 76px 1fr; gap: 8px;
+      padding: 4px 0; border-bottom: 1px dashed #e8eef3; color: var(--ink-soft);
+    }
+    .card-block .row:last-child { border-bottom: 0; }
+    .card-block .k { color: var(--mute); }
+    .task {
+      margin: 6px 14px; background: #fff; border: 1px solid #e0e7ef;
+      border-radius: 12px; padding: 10px 12px; font-size: 12px;
+    }
+    .task b { display: block; margin-bottom: 4px; }
+    .task span { color: var(--ink-soft); line-height: 1.4; }
+    .quote-lines { margin: 8px 14px 12px; }
+    .quote-lines .line {
+      display: flex; justify-content: space-between; gap: 10px;
+      padding: 6px 0; border-bottom: 1px dashed #e4ebf2; font-size: 12.5px;
+    }
+    .quote-lines .line:last-child { border-bottom: 0; font-weight: 700; }
+    .actions {
+      display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 14px;
+    }
+    .btn {
+      border: 0; border-radius: 10px; padding: 8px 12px; font-size: 12px;
+      font-weight: 700; cursor: default; font-family: inherit;
+    }
+    .btn.amber { background: var(--amber); color: #fff; }
+    .btn.navy { background: var(--navy); color: #fff; }
+    .btn.secondary { background: #e8f1ed; color: var(--navy-deep); }
+    .mini-table {
+      width: calc(100% - 28px); margin: 0 14px 10px; border-collapse: collapse;
+      font-size: 11.5px; background: #fff; border: 1px solid #e0e7ef; border-radius: 10px; overflow: hidden;
+    }
+    .mini-table th, .mini-table td { padding: 6px 8px; text-align: left; border-bottom: 1px solid #eef2f6; }
+    .mini-table th { background: #f0f4f8; color: var(--mute); font-weight: 600; }
+    .note {
+      margin: 0 14px 12px; font-size: 11.5px; color: var(--mute); line-height: 1.45;
+    }
+    .tabs {
+      display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 6px;
+    }
+    .tab {
+      font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 8px;
+      background: #e8eef6; color: var(--ink-soft);
+    }
+    .tab.on { background: var(--navy); color: #fff; }
+    .scene-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+      margin: 8px 14px 10px;
+    }
+    .scene {
+      background: #fff; border: 1px solid #e0e7ef; border-radius: 10px;
+      padding: 8px; font-size: 11px; line-height: 1.35;
+    }
+    .scene b { display: block; margin-bottom: 4px; font-size: 12px; }
+    .scene.on { border-color: var(--navy); background: #eef6f3; }
+    .flag {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      border-radius: 999px; padding: 2px 7px; margin-left: 4px;
+    }
+    .flag.int { background: #e8f6ef; color: var(--ok); }
+    .flag.prc { background: #fff1e4; color: #8a5a12; }
+    footer.wrap { padding: 0 0 56px; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.7; }
+
+    .sum-logic {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+      padding: 8px 24px 18px;
+    }
+    .sum-logic article {
+      background: #fff; border: 1px solid var(--line); border-radius: 14px;
+      padding: 14px 16px;
+    }
+    .sum-logic .num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--navy-deep); color: #fff; font-size: 12px; font-weight: 700;
+      margin-right: 8px;
+    }
+    .sum-logic h3 {
+      font-size: 14px; margin: 0 0 8px; font-family: "Noto Serif SC", serif;
+      display: flex; align-items: center;
+    }
+    .sum-logic p { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink-soft); }
+    .sum-table-wrap { padding: 0 24px 24px; overflow-x: auto; }
+    table.sum {
+      width: 100%; border-collapse: collapse; min-width: 760px;
+      background: #fff; border: 1px solid var(--line); border-radius: 14px;
+      overflow: hidden; font-size: 13px;
+    }
+    table.sum th, table.sum td {
+      padding: 12px 14px; text-align: left; vertical-align: top;
+      border-bottom: 1px solid #e8eef3; line-height: 1.5;
+    }
+    table.sum tr:last-child td { border-bottom: 0; }
+    table.sum thead th {
+      background: var(--navy-deep); color: #fff; font-weight: 700; font-size: 13px;
+    }
+    table.sum thead th.ai { background: #1a4a40; }
+    table.sum thead th.human { background: #3d4a3f; }
+    table.sum tbody tr:nth-child(even) { background: #f7faf8; }
+    table.sum tbody tr:hover { background: #eef6f3; }
+    table.sum .nid {
+      display: inline-block; min-width: 22px; text-align: center;
+      background: var(--navy-deep); color: #fff; border-radius: 6px;
+      font-size: 11px; font-weight: 700; padding: 2px 6px; margin-right: 6px;
+    }
+    table.sum .nid.skip { background: var(--skip); }
+    table.sum .nid.light { background: var(--amber); }
+    table.sum .who { color: var(--navy); font-weight: 700; }
+    table.sum a.jump { color: inherit; }
+    table.sum a.jump:hover { text-decoration: underline; }
+    @media (max-width: 900px) {
+      .node-top, .change, .toc, .sum-logic { grid-template-columns: 1fr; }
+      .proto { padding: 16px; }
+      .scene-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero wrap">
+    <div class="eyebrow">Data Element Mall · Customer-facing demand</div>
+    <h1>数据元素商场鱼骨图</h1>
+    <p class="lede">
+      相对数据集成、数据加工两条<strong>内部履约链</strong>，本图只画客户自己选数据的一层：
+      散装可 AI 按条件筛、场景元件与分析师数据包是方便购买的陈列（可与散装混装），
+      给出<strong>简单参考报价</strong>后下单，订单链接销售。
+      <strong>客户不判断集成还是加工</strong>；销售接手后系统给建议，沟通完可整单或拆成两单，再进入原内部完整流程。商场价非正式成交价。
+    </p>
+    <div class="meta-row">
+      <div class="pill focus"><strong>重点做</strong> 02 散装 AI · 05 参考报价 · 07 销售路径建议</div>
+      <div class="pill"><strong>轻量做</strong> 03 元件检索 · 04 包检索 · 06 草稿单/通知</div>
+      <div class="pill skip"><strong>基本不做</strong> 01 登录鉴权 · 选品中销售接管</div>
+      <div class="pill"><strong>示例</strong> 散装 LNG + 期现元件 + 天然气包</div>
+      <a class="pill focus" href="#ai-nodes"><strong>节点总结</strong> AI 做什么 / 人做什么 →</a>
+      <a class="pill" href="./edit.html"><strong>可编辑文案</strong> 改字 / 复制 →</a>
+      <a class="pill" href="./prototypes-editable.md"><strong>Markdown</strong> 全文 →</a>
+    </div>
+    <nav class="toc" aria-label="节点导航">
+      <a class="skip-node" href="#n1"><strong>01 登录进入商场</strong><span>基本不做 · 现有账号体系</span></a>
+      <a href="#n2"><strong>02 散装 AI 挑选</strong><span>重点 · 条件筛选，不向客户标路径</span></a>
+      <a href="#n3"><strong>03 场景数据元件</strong><span>轻量 · 采购/期货/期现预组</span></a>
+      <a href="#n4"><strong>04 分析师数据包</strong><span>轻量 · 如天然气包，可整包买</span></a>
+      <a href="#n5"><strong>05 混装与简单报价</strong><span>重点 · 参考价，非正式成交</span></a>
+      <a href="#n6"><strong>06 下单链接销售</strong><span>轻量 · 草稿内部单</span></a>
+      <a href="#n7"><strong>07 销售判定路径</strong><span>重点 · 建议集成/加工，可拆单</span></a>
+    </nav>
+  </header>
+
+  <section class="wrap">
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>鱼骨图 · 客户端选品到销售接手</h2>
+          <p>02 / 03 / 04 为并行货架，可同时加购。实线绿底 = 重点做；浅琥珀 = 轻量；虚线 = 基本不做。点击节点看原型。</p>
+        </div>
+        <div class="hint">可点击节点卡片</div>
+      </div>
+      <div class="fishbone-wrap">
+        <div class="fishbone" role="img" aria-label="数据元素商场面向客户的数据需求鱼骨图">
+          <svg viewBox="0 0 1240 540" xmlns="http://www.w3.org/2000/svg">
+            <line class="spine" x1="56" y1="270" x2="990" y2="270" />
+            <path class="head-shape" d="M990 270 L1118 198 L1152 270 L1118 342 Z" />
+            <text class="head-text" x="1022" y="260">草稿内部单</text>
+            <text class="head-sub" x="1018" y="282">销售接手再分流</text>
+            <path d="M56 270 L18 228 L28 270 L18 312 Z" fill="#14201c" />
+
+            <!-- upper: 01 skip, 02 focus, 05 focus, 07 focus -->
+            <line class="rib" x1="168" y1="270" x2="168" y2="108" />
+            <a class="bone-link" href="#n1">
+              <rect class="bone skip" x="58" y="58" width="220" height="92" rx="12" />
+              <text class="bone-tag tag-skip" x="72" y="80">基本不做</text>
+              <text class="bone-title" x="72" y="102">01 登录进入商场</text>
+              <text class="bone-sub" x="72" y="122">现有账号 / 权限</text>
+              <text class="bone-sub" x="72" y="138">不上模型</text>
+            </a>
+
+            <line class="rib" x1="430" y1="270" x2="430" y2="108" />
+            <a class="bone-link" href="#n2">
+              <rect class="bone focus" x="320" y="58" width="220" height="92" rx="12" />
+              <text class="bone-tag tag-focus" x="334" y="80">重点做</text>
+              <text class="bone-title" x="334" y="102">02 散装 AI 挑选</text>
+              <text class="bone-sub" x="334" y="122">客户给条件自动筛</text>
+              <text class="bone-sub" x="334" y="138">不向客户标路径</text>
+            </a>
+
+            <line class="rib" x1="700" y1="270" x2="700" y2="108" />
+            <a class="bone-link" href="#n5">
+              <rect class="bone focus" x="590" y="58" width="220" height="92" rx="12" />
+              <text class="bone-tag tag-focus" x="604" y="80">重点做</text>
+              <text class="bone-title" x="604" y="102">05 简单参考报价</text>
+              <text class="bone-sub" x="604" y="122">混装汇总 · 非正式</text>
+              <text class="bone-sub" x="604" y="138">不锁死集成/加工</text>
+            </a>
+
+            <line class="rib" x1="930" y1="270" x2="930" y2="108" />
+            <a class="bone-link" href="#n7">
+              <rect class="bone focus" x="820" y="58" width="220" height="92" rx="12" />
+              <text class="bone-tag tag-focus" x="834" y="80">重点做</text>
+              <text class="bone-title" x="834" y="102">07 销售判定路径</text>
+              <text class="bone-sub" x="834" y="122">建议集成 / 加工</text>
+              <text class="bone-sub" x="834" y="138">可整单或拆两单</text>
+            </a>
+
+            <!-- lower: 03, 04, 06 并行货架 + 下单 -->
+            <line class="rib" x1="300" y1="270" x2="300" y2="432" />
+            <a class="bone-link" href="#n3">
+              <rect class="bone light" x="190" y="390" width="220" height="92" rx="12" />
+              <text class="bone-tag tag-light" x="204" y="412">轻量做</text>
+              <text class="bone-title" x="204" y="434">03 场景数据元件</text>
+              <text class="bone-sub" x="204" y="454">采购 / 期货 / 期现</text>
+              <text class="bone-sub" x="204" y="470">预组陈列 · 可混买</text>
+            </a>
+
+            <line class="rib" x1="560" y1="270" x2="560" y2="432" />
+            <a class="bone-link" href="#n4">
+              <rect class="bone light" x="450" y="390" width="220" height="92" rx="12" />
+              <text class="bone-tag tag-light" x="464" y="412">轻量做</text>
+              <text class="bone-title" x="464" y="434">04 分析师数据包</text>
+              <text class="bone-sub" x="464" y="454">如天然气包打标项</text>
+              <text class="bone-sub" x="464" y="470">整包可购 · 可混买</text>
+            </a>
+
+            <line class="rib" x1="820" y1="270" x2="820" y2="432" />
+            <a class="bone-link" href="#n6">
+              <rect class="bone light" x="710" y="390" width="220" height="92" rx="12" />
+              <text class="bone-tag tag-light" x="724" y="412">轻量做</text>
+              <text class="bone-title" x="724" y="434">06 下单链接销售</text>
+              <text class="bone-sub" x="724" y="454">草稿内部单 + 通知</text>
+              <text class="bone-sub" x="724" y="470">选品中不接管</text>
+            </a>
+
+            <text class="bone-sub" x="70" y="265" style="fill:#6b7788;font-size:11px;">并行货架 02+03+04 → 报价 → 链接销售 → 内部集成/加工主链</text>
+          </svg>
+        </div>
+      </div>
+      <div class="legend">
+        <span><i class="f"></i>重点做：模型直接降本（筛选 / 参考价 / 路径建议）</span>
+        <span><i class="l"></i>轻量做：陈列检索、草稿单、通知，不改责任边界</span>
+        <span><i class="s"></i>基本不做：登录鉴权；选品中销售接管已取消</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="ai-nodes">
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>AI 优化节点</h2>
+          <p>与数据集成 / 数据加工同一张口径：每步只写清 AI 做什么、人做什么。客户不判集成或加工。</p>
+        </div>
+        <div class="hint">一页对照表</div>
+      </div>
+      <div class="sum-logic">
+        <article>
+          <h3><span class="num">1</span>客户自助选品</h3>
+          <p>客户在商场混选<strong>散装单数据项</strong>（AI 按条件筛）、<strong>场景元件</strong>、<strong>分析师数据包</strong>。包和元件只是分场景陈列，不是互斥订单类型。</p>
+        </article>
+        <article>
+          <h3><span class="num">2</span>参考报价后下单给销售</h3>
+          <p>系统给出<strong>简单参考报价</strong>（非正式成交价）。客户提交后生成草稿内部单并<strong>链接对口销售</strong>。选品过程中销售不接管。</p>
+        </article>
+        <article>
+          <h3><span class="num">3</span>销售判定后再进内部主链</h3>
+          <p>销售只拍板<strong>集成还是加工</strong>：标准项可 API → 集成；需分析师生产且线下交付 → 加工。沟通后可整单，或拆成两单。商场清单仅作草稿，内部仍走完整流程。</p>
+        </article>
+      </div>
+      <div class="sum-table-wrap">
+        <table class="sum">
+          <thead>
+            <tr>
+              <th style="width:22%">节点</th>
+              <th class="ai" style="width:39%">AI 做什么</th>
+              <th class="human" style="width:39%">人做什么</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a class="jump" href="#n1"><span class="nid skip">1</span>登录进入商场</a></td>
+              <td>不上模型。</td>
+              <td><span class="who">客户：</span>用现有企业账号进入商场，看到散装 / 元件 / 数据包三个货架。</td>
+            </tr>
+            <tr>
+              <td><a class="jump" href="#n2"><span class="nid">2</span>散装数据项 AI 筛选</a></td>
+              <td>从自然语言抽出商品、区域、频率、周期；命中标准目录；缺口追问；给出可勾选数据项（不向客户标集成/加工）。</td>
+              <td><span class="who">客户：</span>用自然语言提条件，勾选数据项加入购物车。</td>
+            </tr>
+            <tr>
+              <td><a class="jump" href="#n3"><span class="nid light">3</span>场景数据元件</a></td>
+              <td>场景名检索、相近场景推荐。组合清单已预生成，不现场编造。</td>
+              <td><span class="who">客户：</span>按采购 / 期货 / 期现等场景查看预组项并加购，可与散装、数据包混装。</td>
+            </tr>
+            <tr>
+              <td><a class="jump" href="#n4"><span class="nid light">4</span>分析师数据包</a></td>
+              <td>包名 / 商品检索，包内项说明摘要。不替代分析师打标打包。</td>
+              <td><span class="who">客户：</span>查看已打标数据包（如天然气包）并整包加入购物车。</td>
+            </tr>
+            <tr>
+              <td><a class="jump" href="#n5"><span class="nid">5</span>混装清单与简单报价</a></td>
+              <td>按目录价规汇总参考价；散装与包内重复项提示（不替客户删）。不生成正式合同价。</td>
+              <td><span class="who">客户：</span>确认混装清单后提交。本页不选择集成或加工。</td>
+            </tr>
+            <tr>
+              <td><a class="jump" href="#n6"><span class="nid light">6</span>下单链接销售</a></td>
+              <td>生成草稿内部单与去重摘要；写企微 / 邮件通知草稿。</td>
+              <td><span class="who">客户：</span>提交订单，可留一句需求。<span class="who">销售：</span>接收草稿单。选品过程中不插入接管。</td>
+            </tr>
+            <tr>
+              <td><a class="jump" href="#n7"><span class="nid">7</span>销售判定集成 / 加工</a></td>
+              <td>逐行判断是否标准数据项、能否 API；给出建议与证据；可生成拆单草稿（挂原商场单号）。</td>
+              <td><span class="who">销售：</span>与客户沟通后拍板——整单集成、整单加工，或拆成两部分分别走内部完整主链（集成从线索/筛选重做，加工从需求拆解重做）。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <article class="node" id="n1">
+      <div class="node-top">
+        <div class="node-info">
+          <div class="node-tag"><span class="n">01</span> 客户进入 <span class="badge skip">基本不做</span></div>
+          <h3>登录进入数据元素商场</h3>
+          <p class="goal">客户用现有企业账号进入商场，看到三个货架：散装数据项、场景元件、分析师数据包。本节点不建设新的鉴权模型。</p>
+          <div class="ai-box skip-box">
+            <h4>明确不做</h4>
+            <ul>
+              <li>不上登录/鉴权模型</li>
+              <li>不在进场时让客户先选「集成还是加工」</li>
+            </ul>
+          </div>
+          <div class="change">
+            <div><strong>角色</strong>客户自助进入，销售此时不介入</div>
+            <div><strong>结论</strong>复用账号体系即可</div>
+          </div>
+        </div>
+        <div class="proto">
+          <div class="device">
+            <div class="device-bar"><div class="dots"><i></i><i></i><i></i></div><span>登录</span></div>
+            <div class="screen">
+              <div class="app-top">
+                <div class="brand">数据元素商场<em>面向客户选品</em></div>
+                <span class="chip skip">现有账号</span>
+              </div>
+              <div class="card-block">
+                <div class="row"><span class="k">企业</span><span>华燃贸易</span></div>
+                <div class="row"><span class="k">角色</span><span>采购经理 李某</span></div>
+                <div class="row"><span class="k">货架</span><span>散装 · 场景元件 · 数据包</span></div>
+              </div>
+              <p class="note">登录后直接选数据，无需先判断交付路径。</p>
+              <div class="actions">
+                <button class="btn navy">进入商场</button>
+                <button class="btn secondary">找回账号</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="node" id="n2">
+      <div class="node-top">
+        <div class="node-info">
+          <div class="node-tag"><span class="n">02</span> 并行货架 · 散装 <span class="badge focus">重点做</span></div>
+          <h3>散装单数据项，AI 按条件筛选</h3>
+          <p class="goal">客户用自然语言给出商品、区域、频率、时间窗，AI 从标准目录筛出可勾选数据项并加入购物车。客户只看见「要哪些数据」，看不见集成/加工标签。</p>
+          <div class="ai-box">
+            <h4>AI 介入</h4>
+            <ul>
+              <li>条件 → 目录命中（商品 / 区域 / 频率 / 时间窗）</li>
+              <li>输出可勾选清单（带数据项 ID）</li>
+              <li>缺口追问：只要现货，还是也要期货结算</li>
+            </ul>
+          </div>
+          <div class="ai-box skip-box">
+            <h4>明确不做</h4>
+            <ul>
+              <li>不让客户二选一「集成 / 加工」</li>
+              <li>选品过程中销售不插入接管</li>
+            </ul>
+          </div>
+        </div>
+        <div class="proto">
+          <div class="device">
+            <div class="device-bar"><div class="dots"><i></i><i></i><i></i></div><span>散装 AI</span></div>
+            <div class="screen">
+              <div class="app-top">
+                <div class="brand">AI 挑选<em>条件已识别</em></div>
+                <span class="chip">散装</span>
+              </div>
+              <div class="card-block">
+                <div class="row"><span class="k">条件</span><span>华东 LNG 出厂价 · 周 · 近一年；华北管道气到岸价</span></div>
+              </div>
+              <table class="mini-table">
+                <thead><tr><th>数据项</th><th>ID</th></tr></thead>
+                <tbody>
+                  <tr><td>LNG 出厂价（华东）</td><td>DATA-LNG-EC-SPOT</td></tr>
+                  <tr><td>管道气到岸价（华北）</td><td>DATA-PNG-NC-CIF</td></tr>
+                </tbody>
+              </table>
+              <p class="note">列表不展示「可 API / 需定制」，避免客户做路径判断。</p>
+              <div class="actions">
+                <button class="btn navy">加入购物车</button>
+                <button class="btn secondary">换条件</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="node" id="n3">
+      <div class="node-top">
+        <div class="node-info">
+          <div class="node-tag"><span class="n">03</span> 并行货架 · 元件 <span class="badge light">轻量做</span></div>
+          <h3>场景数据元件（采购 / 期货 / 期现…）</h3>
+          <p class="goal">元件是内部已经预组好的「该场景必要数据项」，方便客户按场景一看即买。它不是另一种订单类型，可以和散装、数据包放进同一张购物车。</p>
+          <div class="ai-box">
+            <h4>AI 介入</h4>
+            <ul>
+              <li>场景名检索、相近场景推荐</li>
+              <li>打开即可看到预组数据项 ID</li>
+            </ul>
+          </div>
+          <div class="ai-box skip-box">
+            <h4>明确不做</h4>
+            <ul>
+              <li>不现场让模型现编一套元件</li>
+              <li>不与散装互斥下单</li>
+            </ul>
+          </div>
+        </div>
+        <div class="proto">
+          <div class="device">
+            <div class="device-bar"><div class="dots"><i></i><i></i><i></i></div><span>场景元件</span></div>
+            <div class="screen">
+              <div class="app-top">
+                <div class="brand">分场景购买<em>内部陈列，可混装</em></div>
+                <span class="chip warn">已选期现</span>
+              </div>
+              <div class="scene-grid">
+                <div class="scene"><b>采购</b>现货价 · 到货 · 库存</div>
+                <div class="scene"><b>期货交易</b>合约价 · 持仓 · 仓单</div>
+                <div class="scene on"><b>期现结合</b>现货 · 结算 · 基差</div>
+              </div>
+              <div class="task"><b>期现结合 · 预组项</b><span>DATA-LNG-EC-SPOT / DATA-LNG-FUT-SET / DATA-LNG-BASIS</span></div>
+              <div class="actions">
+                <button class="btn amber">加入购物车</button>
+                <button class="btn secondary">看明细</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="node" id="n4">
+      <div class="node-top">
+        <div class="node-info">
+          <div class="node-tag"><span class="n">04</span> 并行货架 · 数据包 <span class="badge light">轻量做</span></div>
+          <h3>分析师已打标的数据包</h3>
+          <p class="goal">如天然气数据包：分析师把重要数据项打好标、打成包，客户可整包查看购买。同样只是陈列方式，可与散装、元件同时购买。</p>
+          <div class="ai-box">
+            <h4>AI 介入</h4>
+            <ul>
+              <li>包名 / 商品检索</li>
+              <li>包内项说明摘要</li>
+            </ul>
+          </div>
+          <div class="ai-box skip-box">
+            <h4>明确不做</h4>
+            <ul>
+              <li>不替代分析师打标、打包</li>
+            </ul>
+          </div>
+        </div>
+        <div class="proto">
+          <div class="device">
+            <div class="device-bar"><div class="dots"><i></i><i></i><i></i></div><span>数据包</span></div>
+            <div class="screen">
+              <div class="app-top">
+                <div class="brand">天然气数据包<em>PKG-NG-CORE</em></div>
+                <span class="chip">分析师打标</span>
+              </div>
+              <div class="task"><b>核心</b><span>LNG 出厂价（华东/华南）· 管道气到岸价</span></div>
+              <div class="task"><b>观察</b><span>接收站库存 · 发电气需求</span></div>
+              <p class="note">整包加入后，仍可继续加散装或元件。</p>
+              <div class="actions">
+                <button class="btn amber">整包加入购物车</button>
+                <button class="btn secondary">展开数据项</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="node" id="n5">
+      <div class="node-top">
+        <div class="node-info">
+          <div class="node-tag"><span class="n">05</span> 简单报价 <span class="badge focus">重点做</span></div>
+          <h3>混装清单 + 参考价（非正式成交）</h3>
+          <p class="goal">购物车允许散装、元件、数据包混装。系统按目录价规汇总<strong>参考价</strong>，并提示非正式成交价。若散装项与包内项重复，只提示不去替客户删除。</p>
+          <div class="ai-box">
+            <h4>AI 介入</h4>
+            <ul>
+              <li>价规汇总参考价</li>
+              <li>重复项提示</li>
+            </ul>
+          </div>
+          <div class="ai-box skip-box">
+            <h4>明确不做</h4>
+            <ul>
+              <li>不生成正式合同价</li>
+              <li>不在本页锁死集成或加工</li>
+            </ul>
+          </div>
+        </div>
+        <div class="proto">
+          <div class="device">
+            <div class="device-bar"><div class="dots"><i></i><i></i><i></i></div><span>购物车</span></div>
+            <div class="screen">
+              <div class="app-top">
+                <div class="brand">简单报价<em>参考 · 非正式</em></div>
+                <span class="chip warn">可混装</span>
+              </div>
+              <div class="quote-lines">
+                <div class="line"><span>散装 · LNG 出厂价 周·1年</span><span>¥ 12,000</span></div>
+                <div class="line"><span>散装 · 管道气到岸价</span><span>¥ 8,000</span></div>
+                <div class="line"><span>元件 · 期现结合</span><span>¥ 15,000</span></div>
+                <div class="line"><span>数据包 · 天然气包</span><span>¥ 18,000</span></div>
+                <div class="line"><span>参考合计</span><span>¥ 53,000</span></div>
+              </div>
+              <p class="note">提交后由销售协助确认方案与交付路径。</p>
+              <div class="actions">
+                <button class="btn navy">提交订单给销售</button>
+                <button class="btn secondary">返回改选</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="node" id="n6">
+      <div class="node-top">
+        <div class="node-info">
+          <div class="node-tag"><span class="n">06</span> 下单 <span class="badge light">轻量做</span></div>
+          <h3>生成草稿内部单，链接对口销售</h3>
+          <p class="goal">客户点提交即结束自助选品：系统生成商场草稿单（清单 + 参考价 + 可选留言），推给对口销售。选品过程中销售不接管；协助从本节点之后开始。</p>
+          <div class="ai-box">
+            <h4>AI 介入</h4>
+            <ul>
+              <li>生成草稿内部单与去重摘要</li>
+              <li>企微 / 邮件通知草稿</li>
+            </ul>
+          </div>
+          <div class="ai-box skip-box">
+            <h4>明确不做</h4>
+            <ul>
+              <li>取消「选品中销售随时接管」</li>
+            </ul>
+          </div>
+        </div>
+        <div class="proto">
+          <div class="device">
+            <div class="device-bar"><div class="dots"><i></i><i></i><i></i></div><span>已提交</span></div>
+            <div class="screen">
+              <div class="app-top">
+                <div class="brand">订单已交给销售<em>MALL-2026-0824</em></div>
+                <span class="chip">待接收</span>
+              </div>
+              <div class="card-block">
+                <div class="row"><span class="k">客户</span><span>华燃贸易</span></div>
+                <div class="row"><span class="k">清单</span><span>散装 2 + 元件 1 + 数据包 1</span></div>
+                <div class="row"><span class="k">参考价</span><span>¥ 53,000</span></div>
+                <div class="row"><span class="k">销售</span><span>王某 · 已推送</span></div>
+                <div class="row"><span class="k">留言</span><span>开工率请按我司口径</span></div>
+              </div>
+              <p class="note">客户侧只看到「销售将联系您」，看不到路径判定。</p>
+              <div class="actions">
+                <button class="btn secondary">查看提交清单</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="node" id="n7">
+      <div class="node-top">
+        <div class="node-info">
+          <div class="node-tag"><span class="n">07</span> 销售接手 <span class="badge focus">重点做</span></div>
+          <h3>系统建议集成 / 加工；沟通后可拆单</h3>
+          <p class="goal">销售接收商场草稿单。系统按行给出建议：命中标准数据项且可 API → <strong>集成</strong>；没有标准项、需分析师生产、线下交付（走加工交付规则）→ <strong>加工</strong>。与客户沟通后，销售拍板：整单集成、整单加工，或拆成两部分走内部。清单与参考价仅作草稿，内部仍走完整主链。</p>
+          <div class="ai-box">
+            <h4>AI 介入</h4>
+            <ul>
+              <li>逐行命中标准项、能否 API，给出证据（ID / 交付形态）</li>
+              <li>生成拆单草稿：集成内部单 + 加工内部单，挂原商场单号</li>
+            </ul>
+          </div>
+          <div class="ai-box skip-box">
+            <h4>明确不做</h4>
+            <ul>
+              <li>不替代销售与客户沟通后的最终选择</li>
+              <li>不跳过内部完整流程（集成从线索/筛选重做；加工从需求拆解重做）</li>
+            </ul>
+          </div>
+        </div>
+        <div class="proto">
+          <div class="device">
+            <div class="device-bar"><div class="dots"><i></i><i></i><i></i></div><span>销售工作台</span></div>
+            <div class="screen">
+              <div class="app-top">
+                <div class="brand">路径建议<em>客户不可见</em></div>
+                <span class="chip warn">待拍板</span>
+              </div>
+              <div class="task"><b>目录项 / 元件 / 天然气包 <span class="flag int">建议集成</span></b><span>标准数据项 · 可 API 提供</span></div>
+              <div class="task"><b>留言「按我司口径重做开工率」 <span class="flag prc">建议加工</span></b><span>无标准项 · 分析师生产 · 线下交付</span></div>
+              <p class="note">沟通后可选：整单集成 · 全部改加工 · 拆成两单走内部。</p>
+              <div class="actions">
+                <button class="btn navy">按建议拆成两单</button>
+                <button class="btn amber">全部走加工</button>
+                <button class="btn secondary">转入内部主链</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <footer class="wrap">
+    <p>
+      落地建议：先做 <strong>02 散装 AI 筛选</strong>与 <strong>05 参考报价</strong>，再做 <strong>07 销售路径建议与拆单草稿</strong>。
+      03 / 04 以预组陈列和检索为主；06 只做草稿单和销售通知。
+      <strong>01 登录与选品中销售接管均不做</strong>。
+      商场不是第三条履约链：有标准项且可 API 进数据集成主链，需分析师生产且线下交付进数据加工主链。
+    </p>
+  </footer>
+
+  <script>
+    const devices = document.querySelectorAll('.device');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) e.target.classList.add('in');
+      });
+    }, { threshold: 0.12 });
+    devices.forEach((d) => io.observe(d));
+  </script>
+</body>
+</html>

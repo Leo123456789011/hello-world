@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>数据加工 AI 工作流 · 可编辑文案</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #121a24; --ink-soft: #3a4656; --navy: #1e3a5f;
+      --amber: #c47a1a; --line: #cfd8e3; --skip: #8a5a3a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: Manrope, "Noto Serif SC", sans-serif; color: var(--ink);
+      background: linear-gradient(180deg, #f3f6fa, #f7f9fb);
+    }
+    .wrap { width: min(900px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+    h1 { font-family: "Noto Serif SC", serif; font-size: 1.8rem; margin: 0 0 8px; }
+    .lede { color: var(--ink-soft); line-height: 1.65; margin: 0 0 18px; }
+    .bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+    .btn {
+      border: 0; border-radius: 10px; padding: 9px 14px; font-weight: 700;
+      font-size: 13px; cursor: pointer; font-family: inherit;
+    }
+    .btn.primary { background: var(--navy); color: #fff; }
+    .btn.secondary { background: #e8eef6; color: var(--navy); }
+    .nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 22px; }
+    .nav a {
+      display: block; background: #fff; border: 1px solid var(--line);
+      border-radius: 12px; padding: 10px 12px; text-decoration: none; color: inherit;
+    }
+    .nav strong { display: block; font-size: 13px; margin-bottom: 2px; }
+    .nav span { font-size: 11.5px; color: var(--ink-soft); }
+    .card {
+      background: #fff; border: 1px solid var(--line); border-radius: 16px;
+      padding: 16px 18px 18px; margin-bottom: 16px;
+    }
+    .card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .card h2 { font-family: "Noto Serif SC", serif; font-size: 1.15rem; margin: 0; }
+    .hint { font-size: 12px; color: var(--ink-soft); margin: 0 0 8px; }
+    .tag {
+      display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px;
+      padding: 3px 9px; margin-left: 8px; vertical-align: middle;
+    }
+    .tag.focus { background: #eef4fb; color: var(--navy); }
+    .tag.light { background: #fff6e8; color: #8a5a12; }
+    .tag.skip { background: #fff4ec; color: var(--skip); }
+    textarea {
+      width: 100%; min-height: 220px; border: 1px solid var(--line); border-radius: 12px;
+      padding: 12px 14px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12.5px; line-height: 1.55; resize: vertical; background: #fafbfd; color: var(--ink);
+    }
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 999px;
+      font-size: 13px; opacity: 0; transition: 0.25s ease; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    @media (max-width: 700px) { .nav { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>数据加工 · 可编辑原型文案</h1>
+    <p class="lede">直接改框内文字，点「复制本节点」可贴进评审材料。可视化鱼骨见 <a href="./index.html">index.html</a>。</p>
+    <div class="bar">
+      <button class="btn primary" type="button" id="copyAll">复制全部节点</button>
+      <a class="btn secondary" href="./index.html">打开鱼骨图</a>
+      <a class="btn secondary" href="./prototypes-editable.md">Markdown 全文</a>
+    </div>
+    <nav class="nav">
+      <a href="#e3"><strong>03 结构化拆解</strong><span>重点做</span></a>
+      <a href="#e4"><strong>04 产能确认</strong><span>轻量做</span></a>
+      <a href="#e5"><strong>05 报价制作</strong><span>重点做</span></a>
+      <a href="#e6"><strong>06 沟通确认</strong><span>轻量做</span></a>
+      <a href="#e7"><strong>07 订单审核</strong><span>基本不做</span></a>
+      <a href="#e8"><strong>08 任务下发</strong><span>做生成</span></a>
+    </nav>
+
+    <section class="card" id="e3">
+      <div class="card-head">
+        <h2>03｜需求结构化拆解 <span class="tag focus">重点做</span></h2>
+        <button class="btn secondary copy-one" type="button" data-target="t3">复制本节点</button>
+      </div>
+      <p class="hint">字段表、拆分建议、按钮文案可改</p>
+      <textarea id="t3">【页面】数据加工 · 需求结构化
+【标签】数据加工 · 多部门 · 方案 ID：DP-2026-0812
+
+【原始输入】
+客户要甲醇、乙烯的开工率和原料结构，要历史三年 + 即期一年，线下 Excel 周更交付，涉及多个业务部门。
+
+【AI 结构化输出】
+商品：甲醇 / 乙烯
+类型：开工率、原料结构
+DIID：DI-MEOH-OPR / DI-ETH-FEED
+频率：周 · 预估 12 项
+时间窗：历史 3 年 + 即期 1 年
+交付：线下 Excel
+建议拆分：甲醇组 / 烯烃组
+
+【按钮】生成可编需求文档｜查看相似历史单｜提交产能确认
+
+【AI 介入】原始需求→可编文档；多部门拆分；相似单召回；缺口追问
+【现状→AI后】手工拆字段 → 提交即得可编文档，PM 只改异常</textarea>
+    </section>
+
+    <section class="card" id="e4">
+      <div class="card-head">
+        <h2>04｜生产能力确认 <span class="tag light">轻量做</span></h2>
+        <button class="btn secondary copy-one" type="button" data-target="t4">复制本节点</button>
+      </div>
+      <textarea id="t4">【页面】产能确认 · 协作台
+
+【分派】
+任务 A：甲醇开工率 → 业务 PM 张某 · 截止 08-20
+任务 B：乙烯原料结构 → 业务 PM 李某 · 截止 08-20
+
+【AI 辅助】任务说明草稿 · 同类单 3–5 人天参考 · 截止前 48h 催办
+【明确不做】不替代业务 PM 产能拍板；不自动改派分析师
+【按钮】确认可承接｜调整截止｜无法承接</textarea>
+    </section>
+
+    <section class="card" id="e5">
+      <div class="card-head">
+        <h2>05｜报价方案制作 <span class="tag focus">重点做</span></h2>
+        <button class="btn secondary copy-one" type="button" data-target="t5">复制本节点</button>
+      </div>
+      <textarea id="t5">【页面】报价方案 · AI 计价
+
+【费用摘要】
+历史数据：¥ 36,000
+即期数据：¥ 24,000（含周更）
+多部门协同加价：¥ 8,000
+建议报价：¥ 68,000
+
+【AI 介入】读需求文档 + 计价规则 → 多 sheet（需求/报价/交付表示例）
+【按钮】PM 审核通过并发布｜调整规则后重算｜下载方案包
+【现状→AI后】手工拼报价 → 草稿自动出，PM 审后发布</textarea>
+    </section>
+
+    <section class="card" id="e6">
+      <div class="card-head">
+        <h2>06｜方案沟通确认 <span class="tag light">轻量做</span></h2>
+        <button class="btn secondary copy-one" type="button" data-target="t6">复制本节点</button>
+      </div>
+      <textarea id="t6">【页面】方案确认 · 销售侧
+【状态】待销售/客户确认
+
+【Diff 示例】
+时间窗：历史 3 年 → 历史 2 年
+报价影响：−¥ 6,000
+
+【AI 介入】版本 diff · 确认稿回写系统 · 可选客户摘要
+【明确不做】不替代销售与客户商务确认
+【按钮】确认无误提交 PM｜需要修改（退回 05）</textarea>
+    </section>
+
+    <section class="card" id="e7">
+      <div class="card-head">
+        <h2>07｜订单审核 <span class="tag skip">基本不做</span></h2>
+        <button class="btn secondary copy-one" type="button" data-target="t7">复制本节点</button>
+      </div>
+      <textarea id="t7">【页面】订单审核 · 规则提醒
+
+【流程】销售提单 → 合同 → 财务到账审核 → 客户审批
+
+【可保留】线索字段不全提醒；金额与确认报价一致性校验（规则即可）
+
+【明确不做】
+1. 不做 AI 替代财务到账审核
+2. 不做 AI 自动签合同 / 自动过客户审批
+3. 本节点不用单独建设模型能力
+
+【结论】不用做 AI，保持现有合规链路</textarea>
+    </section>
+
+    <section class="card" id="e8">
+      <div class="card-head">
+        <h2>08｜生产任务下发 <span class="tag light">做生成</span></h2>
+        <button class="btn secondary copy-one" type="button" data-target="t8">复制本节点</button>
+      </div>
+      <textarea id="t8">【页面】生产下发 · 任务单
+
+【AI 生成】
+企业 / 线索号 / 回款金额 / 数据清单（对齐确认稿）/ 报价行
+通知草稿：企微/邮件正文可一键发送
+国际项目：提醒主管指定负责人（人工）
+
+【按钮】生成并下发｜编辑通知｜指定生产负责人
+
+【明确不做】不替代分析师 Excel 定制生产；不自动指定国际项目负责人
+【现状→AI后】拼表拼邮件 → 任务单与通知自动成型；生产执行仍人工</textarea>
+    </section>
+
+    <section class="card" id="pitch">
+      <div class="card-head">
+        <h2>附录｜评审口径</h2>
+        <button class="btn secondary copy-one" type="button" data-target="tp">复制本节点</button>
+      </div>
+      <textarea id="tp" style="min-height:140px">数据加工多部门链路，AI 优先打在「需求结构化」和「自动报价出方案」两头；
+产能确认与客户确认只做草稿、diff、催办，不改责任人；
+订单财务审核不上模型；
+任务下发自动生成任务单和通知，但不替代分析师制表。</textarea>
+    </section>
+  </div>
+  <div class="toast" id="toast">已复制到剪贴板</div>
+  <script>
+    const toast = document.getElementById('toast');
+    function flash() {
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1600);
+    }
+    async function copyText(t) {
+      await navigator.clipboard.writeText(t);
+      flash();
+    }
+    document.querySelectorAll('.copy-one').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const el = document.getElementById(btn.dataset.target);
+        copyText(el.value);
+      });
+    });
+    document.getElementById('copyAll').addEventListener('click', () => {
+      const ids = ['t3','t4','t5','t6','t7','t8','tp'];
+      const all = ids.map((id) => document.getElementById(id).value).join('\n\n————\n\n');
+      copyText(all);
+    });
+  </script>
+</body>
+</html>

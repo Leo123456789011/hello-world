@@ -1,0 +1,14 @@
+---
+description: 本仓库是本地文档/原型项目，在 Cursor 桌面打开使用
+alwaysApply: true
+---
+
+这是本地项目，不是云端 Agent 环境。方案和历史材料都在仓库里：
+
+- 总览：`index.html`
+- 数据元素商场：`docs/ai-data-marketplace-workflow/`
+- 数据集成：`docs/ai-data-integration-workflow/`
+- 数据加工协作台：`docs/ai-data-processing-workflow/`
+- 定义：`docs/definitions.md`
+
+改方案时优先改各目录下的 `prototypes-editable.md` / `edit.html` / `index.html`，不要假设还要开云端会话。
