@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>数据集成工作流 · AI 智能化鱼骨图与节点原型</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0c1b24;
+      --ink-soft: #243846;
+      --mist: #e8f1f4;
+      --paper: #f7fafb;
+      --teal: #0f6e6a;
+      --teal-deep: #0a4f4c;
+      --copper: #c46a2b;
+      --copper-soft: #f3e0d1;
+      --line: #c5d4db;
+      --ok: #1f7a4d;
+      --warn: #b45309;
+      --chip: #dce9ed;
+      --shadow: 0 18px 50px rgba(12, 27, 36, 0.12);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Manrope", "Noto Serif SC", sans-serif;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #d7ece9 0%, transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, #f3e0d1 0%, transparent 45%),
+        linear-gradient(180deg, #f4f8f9 0%, #eef4f6 40%, #f7fafb 100%);
+      min-height: 100vh;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .wrap {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    header.hero {
+      padding: 56px 0 28px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--teal-deep);
+      font-weight: 700;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 28px;
+      height: 2px;
+      background: var(--copper);
+    }
+
+    h1 {
+      font-family: "Noto Serif SC", serif;
+      font-size: clamp(2rem, 4vw, 3.1rem);
+      line-height: 1.2;
+      margin: 14px 0 12px;
+      max-width: 16ch;
+      font-weight: 700;
+    }
+
+    .lede {
+      max-width: 62ch;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--ink-soft);
+      margin: 0 0 22px;
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(8px);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
+
+    .pill strong { color: var(--ink); font-weight: 700; }
+
+    section {
+      margin: 28px 0 48px;
+    }
+
+    .panel {
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(197, 212, 219, 0.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      padding: 22px 24px 10px;
+      flex-wrap: wrap;
+    }
+
+    .panel-head h2 {
+      font-family: "Noto Serif SC", serif;
+      margin: 0;
+      font-size: 1.45rem;
+    }
+
+    .panel-head p {
+      margin: 6px 0 0;
+      color: var(--ink-soft);
+      font-size: 0.95rem;
+      max-width: 58ch;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--teal-deep);
+      background: #dff1ef;
+      border-radius: 999px;
+      padding: 6px 12px;
+      white-space: nowrap;
+    }
+
+    /* Fishbone */
+    .fishbone-wrap {
+      padding: 8px 12px 24px;
+      overflow-x: auto;
+    }
+
+    .fishbone {
+      min-width: 1120px;
+      height: 520px;
+      position: relative;
+    }
+
+    .fishbone svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .bone-label {
+      cursor: pointer;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+
+    .bone-label:hover,
+    .bone-label:focus-within {
+      transform: translateY(-2px);
+      filter: brightness(1.03);
+    }
+
+    .bone-card {
+      fill: #fff;
+      stroke: var(--line);
+      stroke-width: 1.2;
+      rx: 10;
+    }
+
+    .bone-card.ai {
+      fill: #fff8f2;
+      stroke: #e2b48d;
+    }
+
+    .bone-title {
+      font-family: "Noto Serif SC", serif;
+      font-size: 13px;
+      font-weight: 700;
+      fill: var(--ink);
+    }
+
+    .bone-sub {
+      font-family: "Manrope", sans-serif;
+      font-size: 11px;
+      fill: var(--ink-soft);
+    }
+
+    .spine {
+      stroke: var(--ink);
+      stroke-width: 4;
+      stroke-linecap: round;
+    }
+
+    .rib {
+      stroke: var(--teal);
+      stroke-width: 2.2;
+    }
+
+    .head-shape {
+      fill: var(--ink);
+    }
+
+    .head-text {
+      fill: #fff;
+      font-family: "Noto Serif SC", serif;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .head-sub {
+      fill: rgba(255,255,255,0.78);
+      font-family: "Manrope", sans-serif;
+      font-size: 11px;
+    }
+
+    .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 0 24px 22px;
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
+
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      margin-right: 8px;
+      vertical-align: -1px;
+    }
+
+    .legend .l-node::before { background: #fff; border: 1px solid var(--line); }
+    .legend .l-ai::before { background: #fff8f2; border: 1px solid #e2b48d; }
+    .legend .l-spine::before { background: var(--ink); }
+
+    /* Node sections */
+    .nodes {
+      display: grid;
+      gap: 22px;
+    }
+
+    .node {
+      scroll-margin-top: 24px;
+      background: rgba(255,255,255,0.82);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .node-top {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 0;
+    }
+
+    @media (max-width: 900px) {
+      .node-top { grid-template-columns: 1fr; }
+      h1 { max-width: none; }
+    }
+
+    .node-info {
+      padding: 26px 26px 22px;
+      border-right: 1px solid var(--line);
+      background:
+        linear-gradient(160deg, rgba(15,110,106,0.06), transparent 55%),
+        #fff;
+    }
+
+    @media (max-width: 900px) {
+      .node-info { border-right: 0; border-bottom: 1px solid var(--line); }
+    }
+
+    .node-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--teal-deep);
+      text-transform: uppercase;
+    }
+
+    .node-tag .n {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      background: var(--ink);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+    }
+
+    .node-info h3 {
+      font-family: "Noto Serif SC", serif;
+      font-size: 1.35rem;
+      margin: 10px 0 8px;
+    }
+
+    .node-info .goal {
+      color: var(--ink-soft);
+      line-height: 1.65;
+      margin: 0 0 16px;
+      font-size: 0.96rem;
+    }
+
+    .ai-box {
+      background: linear-gradient(135deg, #fff8f2, #fff);
+      border: 1px solid #e8c3a2;
+      border-radius: 14px;
+      padding: 14px 14px 10px;
+    }
+
+    .ai-box h4 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: var(--copper);
+      letter-spacing: 0.04em;
+    }
+
+    .ai-box ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .ai-box li {
+      position: relative;
+      padding: 7px 0 7px 16px;
+      font-size: 13.5px;
+      line-height: 1.45;
+      border-bottom: 1px dashed #efd5bf;
+    }
+
+    .ai-box li:last-child { border-bottom: 0; }
+
+    .ai-box li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 14px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--copper);
+    }
+
+    .change {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .change div {
+      background: var(--paper);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 12.5px;
+      line-height: 1.45;
+      color: var(--ink-soft);
+    }
+
+    .change strong {
+      display: block;
+      color: var(--ink);
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+
+    /* Prototype frame */
+    .proto {
+      padding: 18px;
+      background:
+        linear-gradient(180deg, #eef4f6, #f7fafb);
+      display: flex;
+      align-items: stretch;
+    }
+
+    .device {
+      width: 100%;
+      background: #0c1b24;
+      border-radius: 16px;
+      padding: 10px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+      animation: riseIn 0.55s ease both;
+    }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .device-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: rgba(255,255,255,0.72);
+      font-size: 11px;
+      padding: 2px 6px 10px;
+    }
+
+    .dots { display: flex; gap: 5px; }
+    .dots i {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      display: block;
+    }
+
+    .screen {
+      background: #f4f7f8;
+      border-radius: 12px;
+      min-height: 360px;
+      overflow: hidden;
+      color: var(--ink);
+    }
+
+    .app-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: #fff;
+      border-bottom: 1px solid #e2ebef;
+    }
+
+    .brand {
+      font-family: "Noto Serif SC", serif;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .brand em {
+      font-style: normal;
+      color: var(--teal);
+      margin-left: 6px;
+      font-family: "Manrope", sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .chip {
+      background: var(--chip);
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 11px;
+      color: var(--ink-soft);
+    }
+
+    .chat {
+      display: grid;
+      grid-template-rows: 1fr auto;
+      min-height: 340px;
+    }
+
+    .msgs {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .bubble {
+      max-width: 88%;
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      animation: pop 0.4s ease both;
+    }
+
+    @keyframes pop {
+      from { opacity: 0; transform: translateY(6px) scale(0.98); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .bubble.user {
+      align-self: flex-end;
+      background: var(--ink);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .bubble.ai {
+      align-self: flex-start;
+      background: #fff;
+      border: 1px solid #dce7ec;
+      border-bottom-left-radius: 4px;
+    }
+
+    .entities {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .ent {
+      background: #e7f4f2;
+      color: var(--teal-deep);
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .composer {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      background: #fff;
+      border-top: 1px solid #e2ebef;
+    }
+
+    .composer input {
+      flex: 1;
+      border: 1px solid #d5e1e6;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      font-size: 12px;
+      background: #f8fbfc;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      background: var(--teal);
+      color: #fff;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 0 14px;
+      cursor: pointer;
+    }
+
+    .btn.secondary {
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid #d5e1e6;
+    }
+
+    .btn.copper { background: var(--copper); }
+
+    /* PM board */
+    .pm {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .case-card {
+      background: #fff;
+      border: 1px solid #dce7ec;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .case-card h5 {
+      margin: 0 0 6px;
+      font-size: 13px;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 8px 0;
+    }
+
+    .choice {
+      flex: 1;
+      min-width: 120px;
+      border: 1.5px solid #d5e1e6;
+      border-radius: 12px;
+      padding: 10px;
+      background: #fff;
+      font-size: 12px;
+    }
+
+    .choice.active {
+      border-color: var(--teal);
+      background: #eef8f7;
+      box-shadow: 0 0 0 3px rgba(15,110,106,0.08);
+    }
+
+    .choice b { display: block; margin-bottom: 4px; }
+    .choice span { color: var(--ink-soft); font-size: 11.5px; line-height: 1.4; }
+
+    .ai-rec {
+      background: #fff8f2;
+      border: 1px solid #e8c3a2;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: var(--ink-soft);
+    }
+
+    .ai-rec strong { color: var(--copper); }
+
+    /* Filter platform */
+    .filter-layout {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      min-height: 360px;
+    }
+
+    .side {
+      background: #12252f;
+      color: rgba(255,255,255,0.86);
+      padding: 12px 10px;
+      font-size: 12px;
+    }
+
+    .side .active {
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 8px;
+      margin-bottom: 6px;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .side .item {
+      padding: 8px;
+      opacity: 0.72;
+      margin-bottom: 2px;
+    }
+
+    .main {
+      padding: 12px;
+      background: #f4f7f8;
+    }
+
+    .breadcrumb {
+      font-size: 11px;
+      color: var(--ink-soft);
+      margin-bottom: 8px;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .field {
+      background: #fff;
+      border: 1px solid #dce7ec;
+      border-radius: 10px;
+      padding: 8px;
+      font-size: 11.5px;
+    }
+
+    .field label {
+      display: block;
+      color: var(--ink-soft);
+      margin-bottom: 4px;
+      font-size: 10.5px;
+    }
+
+    .field select, .field input {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      font: inherit;
+      color: var(--ink);
+      outline: none;
+    }
+
+    .table {
+      background: #fff;
+      border: 1px solid #dce7ec;
+      border-radius: 12px;
+      overflow: hidden;
+      font-size: 11.5px;
+    }
+
+    .table .th,
+    .table .tr {
+      display: grid;
+      grid-template-columns: 28px 1.2fr 1fr 0.8fr 0.8fr;
+      gap: 6px;
+      padding: 8px 10px;
+      align-items: center;
+    }
+
+    .table .th {
+      background: #eef4f6;
+      color: var(--ink-soft);
+      font-weight: 600;
+    }
+
+    .table .tr { border-top: 1px solid #eef2f4; }
+    .table .tr.on { background: #eef8f7; }
+
+    .footer-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      gap: 8px;
+    }
+
+    .price {
+      font-family: "Noto Serif SC", serif;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .price small {
+      display: block;
+      font-family: "Manrope", sans-serif;
+      font-size: 11px;
+      color: var(--ink-soft);
+      font-weight: 500;
+    }
+
+    /* Quote */
+    .quote {
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .quote-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 10px;
+    }
+
+    .sheet, .bill {
+      background: #fff;
+      border: 1px solid #dce7ec;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 12px;
+    }
+
+    .sheet h5, .bill h5 {
+      margin: 0 0 8px;
+      font-size: 13px;
+    }
+
+    .sheet table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
+    .sheet th, .sheet td {
+      border-bottom: 1px solid #eef2f4;
+      padding: 6px 4px;
+      text-align: left;
+    }
+
+    .sheet th { color: var(--ink-soft); font-weight: 600; }
+
+    .bill .line {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px dashed #e8eef1;
+    }
+
+    .bill .total {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-family: "Noto Serif SC", serif;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Delivery */
+    .steps {
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      background: #fff;
+      border: 1px solid #dce7ec;
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 12px;
+    }
+
+    .step .idx {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #e7f4f2;
+      color: var(--teal-deep);
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .step.done .idx { background: var(--teal); color: #fff; }
+    .step .st { color: var(--ok); font-weight: 700; font-size: 11px; }
+    .step .st.wait { color: var(--warn); }
+
+    /* Knowledge */
+    .kb {
+      padding: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .kb .card {
+      background: #fff;
+      border: 1px solid #dce7ec;
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 11.5px;
+      min-height: 110px;
+    }
+
+    .kb h5 {
+      margin: 0 0 6px;
+      font-size: 12.5px;
+    }
+
+    .kb p {
+      margin: 0;
+      color: var(--ink-soft);
+      line-height: 1.45;
+    }
+
+    .tree {
+      margin-top: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 10.5px;
+      line-height: 1.55;
+      color: var(--teal-deep);
+      background: #eef8f7;
+      border-radius: 8px;
+      padding: 8px;
+    }
+
+    footer {
+      padding: 10px 0 50px;
+      color: var(--ink-soft);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .toc {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .toc { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 700px) {
+      .toc, .filters, .quote-grid, .kb, .change { grid-template-columns: 1fr; }
+      .filter-layout { grid-template-columns: 1fr; }
+      .side { display: flex; gap: 8px; overflow-x: auto; }
+      .side .active, .side .item { white-space: nowrap; margin: 0; }
+    }
+
+    .toc a {
+      display: block;
+      background: rgba(255,255,255,0.75);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 14px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .toc a:hover {
+      transform: translateY(-2px);
+      border-color: #9fc2c0;
+    }
+
+    .toc strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .toc span {
+      font-size: 12px;
+      color: var(--ink-soft);
+      line-height: 1.4;
+    }
+
+    .seg-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .seg-tabs .tab {
+      border: 1px solid #d5e1e6;
+      background: #fff;
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-size: 11.5px;
+      color: var(--ink-soft);
+      cursor: default;
+    }
+
+    .seg-tabs .tab.on {
+      background: #eef8f7;
+      border-color: var(--teal);
+      color: var(--teal-deep);
+      font-weight: 700;
+    }
+
+    .id-chip {
+      display: inline-block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 10.5px;
+      background: #edf3f5;
+      color: #35525e;
+      border-radius: 6px;
+      padding: 2px 6px;
+    }
+
+    .ver-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #fff8f2;
+      border: 1px solid #e8c3a2;
+      color: #8a4a1a;
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .mod-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 12px 14px 4px;
+    }
+
+    .mod-opt {
+      border: 1.5px solid #d5e1e6;
+      border-radius: 12px;
+      padding: 10px;
+      background: #fff;
+      font-size: 12px;
+    }
+
+    .mod-opt.on {
+      border-color: var(--teal);
+      background: #eef8f7;
+    }
+
+    .mod-opt b { display: block; margin-bottom: 4px; }
+    .mod-opt span { color: var(--ink-soft); font-size: 11.5px; line-height: 1.4; }
+
+    .diff-box {
+      margin: 8px 14px 12px;
+      background: #f7fafb;
+      border: 1px solid #dce7ec;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+
+    .diff-box .line {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 8px;
+      padding: 4px 0;
+      border-bottom: 1px dashed #e3ecef;
+    }
+
+    .diff-box .line:last-child { border-bottom: 0; }
+    .diff-box .k { color: var(--ink-soft); }
+    .diff-box .old { color: #9a3b2f; text-decoration: line-through; }
+    .diff-box .new { color: var(--ok); font-weight: 600; }
+
+    .flow-mini {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      padding: 0 14px 12px;
+      font-size: 11.5px;
+      color: var(--ink-soft);
+    }
+
+    .flow-mini .f {
+      background: #fff;
+      border: 1px solid #d5e1e6;
+      border-radius: 999px;
+      padding: 4px 10px;
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .flow-mini .f.done {
+      background: #e9f6ee;
+      border-color: #b7dfc6;
+      color: var(--ok);
+    }
+
+    .flow-mini .arrow { opacity: 0.45; }
+
+    .route-box {
+      margin: 10px 14px 0;
+      border: 1px dashed #b7d0cd;
+      background: #f3faf9;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+
+    .route-box .ttl {
+      font-weight: 700;
+      color: var(--teal-deep);
+      margin-bottom: 6px;
+    }
+
+    .route-box .opt {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      padding: 4px 0;
+      color: var(--ink-soft);
+      line-height: 1.45;
+    }
+
+    .route-box .opt strong { color: var(--ink); }
+
+    .route-box .opt.on strong { color: var(--teal-deep); }
+
+    @media (max-width: 700px) {
+      .mod-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero wrap">
+    <div class="eyebrow">Data Integration · AI Workflow</div>
+    <h1>数据集成工作流 AI 智能化鱼骨图</h1>
+    <p class="lede">
+      以「降低 PM 手工制表、缩短销售确认链路」为目标，主链仍为既有鱼骨节点；
+      筛选同时覆盖<strong>数据项</strong>与<strong>信息项</strong>，并在交付后补「项目修改审批」入口（版本化变更）。
+    </p>
+    <div class="meta-row">
+      <div class="pill"><strong>主路径</strong> 销售提需 → AI 初筛 → PM 判定 → 自助筛选 → 报价出表</div>
+      <div class="pill"><strong>双目录</strong> 数据项 ID + 信息项 ID（如甲醇周评）</div>
+      <div class="pill"><strong>交付后</strong> 修改 → 提交 → 审批 → 执行 · 生成 V2</div>
+      <div class="pill"><strong>示例</strong> 甲醇市场价 / 甲醇周评 · 即期 1 年</div>
+      <a class="pill" href="./edit.html"><strong>可编辑文案</strong> 点此改字 / 一键复制 →</a>
+      <a class="pill" href="./prototypes-editable.md"><strong>Markdown</strong> 纯文本可复制版 →</a>
+    </div>
+
+    <nav class="toc" aria-label="节点导航">
+      <a href="#n1"><strong>01 需求对话采集</strong><span>抽取商品 + 数据项/信息项 + 周期</span></a>
+      <a href="#n2"><strong>02 智能初筛分流</strong><span>判定是否进入数据集成路径，并补全线索结构</span></a>
+      <a href="#n3"><strong>03 PM 类型判定</strong><span>仅确认集成 / 加工，AI 给出推荐与依据</span></a>
+      <a href="#n4"><strong>04 筛选平台</strong><span>数据项 + 信息项双目录，销售自助勾选</span></a>
+      <a href="#n5"><strong>05 报价与出表</strong><span>筛选结果直接生成报价与线下交付表格</span></a>
+      <a href="#n6"><strong>06 交付闭环底座</strong><span>审批、权限、签约；商品-数据/信息本体</span></a>
+      <a href="#n7"><strong>07 项目修改审批</strong><span>默认同单 Vn；边界才新开需求</span></a>
+    </nav>
+  </header>
+
+  <section class="wrap">
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>鱼骨图 · 关键节点与 AI 介入要素</h2>
+          <p>主链 01–06 保持原鱼骨结构；07 为交付后扩展节点。橘色卡片为 AI 能力要素。点击节点跳转原型。</p>
+        </div>
+        <div class="hint">可点击节点卡片</div>
+      </div>
+      <div class="fishbone-wrap">
+        <div class="fishbone" role="img" aria-label="数据集成 AI 智能化鱼骨图">
+          <svg viewBox="0 0 1120 520" xmlns="http://www.w3.org/2000/svg">
+            <!-- spine -->
+            <line class="spine" x1="70" y1="260" x2="900" y2="260" />
+            <!-- head -->
+            <path class="head-shape" d="M900 260 L1020 190 L1050 260 L1020 330 Z" />
+            <text class="head-text" x="940" y="252">AI 智能化</text>
+            <text class="head-sub" x="928" y="274">数据集成交付</text>
+            <!-- tail -->
+            <path d="M70 260 L30 220 L40 260 L30 300 Z" fill="#0c1b24" />
+
+            <!-- ribs upper -->
+            <line class="rib" x1="180" y1="260" x2="180" y2="95" />
+            <line class="rib" x1="360" y1="260" x2="360" y2="95" />
+            <line class="rib" x1="540" y1="260" x2="540" y2="95" />
+            <!-- ribs lower -->
+            <line class="rib" x1="270" y1="260" x2="270" y2="425" />
+            <line class="rib" x1="450" y1="260" x2="450" y2="425" />
+            <line class="rib" x1="630" y1="260" x2="630" y2="425" />
+            <!-- post-delivery rib -->
+            <line class="rib" x1="780" y1="260" x2="780" y2="95" />
+
+            <!-- Node 1 -->
+            <a href="#n1" class="bone-label">
+              <rect class="bone-card" x="78" y="28" width="204" height="62" />
+              <text class="bone-title" x="92" y="52">01 需求对话采集</text>
+              <text class="bone-sub" x="92" y="72">销售自然语言提需 · 实体抽取</text>
+              <rect class="bone-card ai" x="98" y="98" width="184" height="72" />
+              <text class="bone-sub" x="112" y="120">AI：意图识别 / 槽位填充</text>
+              <text class="bone-sub" x="112" y="138">商品+数据/信息项+周期</text>
+              <text class="bone-sub" x="112" y="156">澄清追问 · 置信度校验</text>
+            </a>
+
+            <!-- Node 2 -->
+            <a href="#n2" class="bone-label">
+              <rect class="bone-card" x="258" y="28" width="204" height="62" />
+              <text class="bone-title" x="272" y="52">02 智能初筛分流</text>
+              <text class="bone-sub" x="272" y="72">是否数据类 · 路由到 PM</text>
+              <rect class="bone-card ai" x="278" y="98" width="184" height="72" />
+              <text class="bone-sub" x="292" y="120">AI：项目类型分类</text>
+              <text class="bone-sub" x="292" y="138">相似历史单召回</text>
+              <text class="bone-sub" x="292" y="156">OA 线索结构化补全</text>
+            </a>
+
+            <!-- Node 3 -->
+            <a href="#n3" class="bone-label">
+              <rect class="bone-card" x="438" y="28" width="204" height="62" />
+              <text class="bone-title" x="452" y="52">03 PM 类型判定</text>
+              <text class="bone-sub" x="452" y="72">仅判：集成 / 加工</text>
+              <rect class="bone-card ai" x="458" y="98" width="184" height="72" />
+              <text class="bone-sub" x="472" y="120">AI：推荐路径+证据</text>
+              <text class="bone-sub" x="472" y="138">复杂度 / 多部门风险</text>
+              <text class="bone-sub" x="472" y="156">一键放行到筛选平台</text>
+            </a>
+
+            <!-- Node 7 post-delivery -->
+            <a href="#n7" class="bone-label">
+              <rect class="bone-card" x="678" y="28" width="204" height="62" />
+              <text class="bone-title" x="692" y="52">07 项目修改审批</text>
+              <text class="bone-sub" x="692" y="72">默认同单变更 · 非新线索</text>
+              <rect class="bone-card ai" x="698" y="98" width="184" height="72" />
+              <text class="bone-sub" x="712" y="120">更换数据项/信息项</text>
+              <text class="bone-sub" x="712" y="138">更换周期（单/多）</text>
+              <text class="bone-sub" x="712" y="156">修改→审批→按Vn执行</text>
+            </a>
+
+            <!-- Node 4 -->
+            <a href="#n4" class="bone-label">
+              <rect class="bone-card" x="168" y="358" width="204" height="62" />
+              <text class="bone-title" x="182" y="382">04 筛选平台</text>
+              <text class="bone-sub" x="182" y="402">数据项 + 信息项自助勾选</text>
+              <rect class="bone-card ai" x="188" y="278" width="184" height="72" />
+              <text class="bone-sub" x="202" y="300">AI：双目录推荐 / ID匹配</text>
+              <text class="bone-sub" x="202" y="318">字段释义 · 冲突校验</text>
+              <text class="bone-sub" x="202" y="336">替代 PM 手工制 Excel</text>
+            </a>
+
+            <!-- Node 5 -->
+            <a href="#n5" class="bone-label">
+              <rect class="bone-card" x="348" y="358" width="204" height="62" />
+              <text class="bone-title" x="362" y="382">05 报价与出表</text>
+              <text class="bone-sub" x="362" y="402">筛选后直接报价+表格</text>
+              <rect class="bone-card ai" x="368" y="278" width="184" height="72" />
+              <text class="bone-sub" x="382" y="300">AI：计价规则匹配</text>
+              <text class="bone-sub" x="382" y="318">标准交付表自动生成</text>
+              <text class="bone-sub" x="382" y="336">续签方案复用旧单</text>
+            </a>
+
+            <!-- Node 6 -->
+            <a href="#n6" class="bone-label">
+              <rect class="bone-card" x="528" y="358" width="204" height="62" />
+              <text class="bone-title" x="542" y="382">06 交付闭环底座</text>
+              <text class="bone-sub" x="542" y="402">审批权限签约 · 知识库</text>
+              <rect class="bone-card ai" x="548" y="278" width="184" height="72" />
+              <text class="bone-sub" x="562" y="300">AI：OA 自动填单</text>
+              <text class="bone-sub" x="562" y="318">状态追踪 / 异常提醒</text>
+              <text class="bone-sub" x="562" y="336">数据项+信息项本体</text>
+            </a>
+
+            <!-- flow labels on spine -->
+            <circle cx="180" cy="260" r="6" fill="#0f6e6a" />
+            <circle cx="270" cy="260" r="6" fill="#0f6e6a" />
+            <circle cx="360" cy="260" r="6" fill="#0f6e6a" />
+            <circle cx="450" cy="260" r="6" fill="#0f6e6a" />
+            <circle cx="540" cy="260" r="6" fill="#0f6e6a" />
+            <circle cx="630" cy="260" r="6" fill="#0f6e6a" />
+            <circle cx="780" cy="260" r="6" fill="#c46a2b" />
+          </svg>
+        </div>
+      </div>
+      <div class="legend">
+        <span class="l-node">流程关键节点（01–06 主链）</span>
+        <span class="l-ai">该节点 AI 介入要素</span>
+        <span class="l-spine">主链路 + 交付后修改（07）</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap nodes">
+    <!-- N1 -->
+    <article class="node" id="n1">
+      <div class="node-top">
+        <div class="node-info">
+          <div class="node-tag"><span class="n">01</span> 需求入口</div>
+          <h3>销售 AI 对话采集</h3>
+          <p class="goal">销售在提 OA 线索前/时，用一句话描述客户需求。AI 识别并结构化为「商品 + 数据项/信息项 + 周期」，并尽量匹配标准 ID；低置信时主动追问。</p>
+          <div class="ai-box">
+            <h4>AI 介入要素</h4>
+            <ul>
+              <li>NER / 槽位抽取：商品、数据项、信息项、频率、时间窗、交付形态</li>
+              <li>双目录匹配：数据项 ID / 信息项 ID（如 INFO-MEOH-WK）归一</li>
+              <li>同义词归一：甲醇/MA、市场价/现货价、周评/周报 → 标准词典</li>
+              <li>澄清策略 + 置信度门槛：缺槽位只问 1–2 问；低置信转人工</li>
+            </ul>
+          </div>
+          <div class="change">
+            <div><strong>现状痛点</strong>销售口语描述散乱，PM 反复理解需求并手工落表</div>
+            <div><strong>AI 后变化</strong>提交即带结构化标签与候选 ID，后续节点复用同一需求对象</div>
+          </div>
+        </div>
+        <div class="proto">
+          <div class="device">
+            <div class="device-bar"><div class="dots"><i></i><i></i><i></i></div><span>销售端 · 需求助手</span></div>
+            <div class="screen chat">
+              <div class="app-top">
+                <div class="brand">数据集成<em>需求助手</em></div>
+                <span class="chip">原型 · 对话采集</span>
+              </div>
+              <div class="msgs">
+                <div class="bubble ai" contenteditable="true">你好，请用一句话描述客户需要什么。可提数据项（如甲醇市场价）或信息项（如甲醇周评），并说明周期。</div>
+                <div class="bubble user" contenteditable="true">客户要甲醇市场价，另外还要甲醇周评，都是即期一年</div>
+                <div class="bubble ai" contenteditable="true">
+                  已识别需求，请确认：
+                  <div class="entities">
+                    <span class="ent">商品：甲醇</span>
+                    <span class="ent">数据项：市场价 · DATA-MEOH-SPOT</span>
+                    <span class="ent">信息项：甲醇周评 · INFO-MEOH-WK</span>
+                    <span class="ent">周期：即期 · 近1年</span>
+                  </div>
+                  <div style="margin-top:8px;color:#5b7280;font-size:11.5px;">置信度 0.91 · 可提交或继续补充地区/口径</div>
+                </div>
+              </div>
+              <div class="composer">
+                <input value="补充：市场价要华东地区口径" />
+                <button class="btn" type="button">提交</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- N2 -->
+    <article class="node" id="n2">
+      <div class="node-top">
+        <div class="node-info">
+          <div class="node-tag"><span class="n">02</span> 初筛分流</div>
+          <h3>智能初筛与线索结构化</h3>
+          <p class="goal">对话结果进入咨询/初筛层：判断是否属于数据类项目，并决定是否进入产品管理部审核。同步把 OA 销售线索补全为可流转对象。</p>
+          <div class="ai-box">
+            <h4>AI 介入要素</h4>
+            <ul>
+              <li>项目类型分类：数据集成 / 数据加工 / 咨询非数据</li>
+              <li>历史相似单召回：同商品+类型的成交结构作参考</li>
+              <li>缺失字段补全建议：客户主体、交付方式、新签/续签</li>
+              <li>红线规则：无法映射标准目录时标记「需人工深挖」</li>
+            </ul>
+          </div>
+          <div class="change">
+            <div><strong>现状痛点</strong>咨询人工判断项目类型，信息在线下传递易丢</div>
+            <div><strong>AI 后变化</strong>自动挂标签并路由；非数据类提前分流，不占 PM 产能</div>
+          </div>
+        </div>
+        <div class="proto">
+          <div class="device">
+            <div class="device-bar"><div class="dots"><i></i><i></i><i></i></div><span>咨询 / 系统 · 初筛面板</span></div>
+            <div class="screen">
+              <div class="app-top">
+                <div class="brand">线索初筛<em>AI Route</em></div>
+                <span class="chip">CL-2026-0812</span>
+              </div>
+              <div class="pm">
+                <div class="case-card">
+                  <h5>客户 A · 甲醇市场价 + 周评</h5>
+                  <div class="row">
+                    <span class="ent">商品：甲醇</span>
+                    <span class="ent">数据项：市场价</span>
+                    <span class="ent">信息项：周评</span>
+                    <span class="ent">周期：1年</span>
+                  </div>
+                  <div class="ai-rec"><strong>AI 建议路由：</strong>数据类 · 优先走「数据集成」审核（匹配历史单 14 条，目录覆盖率 96%）</div>
+                </div>
+                <div class="row">
+                  <div class="choice active"><b>进入产品管理部</b><span>数据项目，交 PM 确认集成/加工</span></div>
+                  <div class="choice"><b>转咨询非数据</b><span>不属于标准数据目录</span></div>
+                </div>
+                <div class="actions">
+                  <button class="btn">确认分流</button>
+                  <button class="btn secondary">查看相似历史单</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- N3 -->
+    <article class="node" id="n3">
+      <div class="node-top">
+        <div class="node-info">
+          <div class="node-tag"><span class="n">03</span> PM 判定</div>
+          <h3>PM 只做集成 / 加工判断</h3>
+          <p class="goal">PM 不再手工制作 Excel。核心动作收敛为：确认需求是否可由标准数据集成满足；若是，放行销售进入对应「商品+数据类型」筛选平台；若否，进入数据加工分支。</p>
+          <div class="ai-box">
+            <h4>AI 介入要素</h4>
+            <ul>
+              <li>路径推荐：基于目录覆盖、字段可配程度给出「集成优先」建议</li>
+              <li>风险提示：多部门、非标口径、定制衍生字段 → 倾向加工</li>
+              <li>证据面板：可映射字段清单、缺口清单、历史同类判定</li>
+              <li>一键动作：确认集成后自动开通销售筛选工作台</li>
+            </ul>
+          </div>
+          <div class="change">
+            <div><strong>现状痛点</strong>PM 既理解需求又制表，成为主瓶颈</div>
+            <div><strong>AI 后变化</strong>PM 决策时长从「做表」变为「看证据点一下」</div>
+          </div>
+        </div>
+        <div class="proto">
+          <div class="device">
+            <div class="device-bar"><div class="dots"><i></i><i></i><i></i></div><span>产品 PM · 类型判定</span></div>
+            <div class="screen">
+              <div class="app-top">
+                <div class="brand">PM 工作台<em>判定</em></div>
+                <span class="chip">待处理 3</span>
+              </div>
+              <div class="pm">
+                <div class="case-card">
+                  <h5>确认需求 · 甲醇 / 市场价 / 即期1年</h5>
+                  <div class="ai-rec"><strong>AI 推荐：数据集成</strong> · 标准目录可覆盖「地区、规格、价格类型、日期」；未见多部门加工特征</div>
+                </div>
+                <div class="row">
+                  <div class="choice active"><b>数据集成</b><span>开放销售筛选平台 · 甲醇+市场价</span></div>
+                  <div class="choice"><b>数据加工</b><span>需项目经理拆分多部门任务</span></div>
+                </div>
+                <div class="actions">
+                  <button class="btn">确认并开放筛选</button>
+                  <button class="btn secondary">查看缺口字段</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- N4 -->
+    <article class="node" id="n4">
+      <div class="node-top">
+        <div class="node-info">
+          <div class="node-tag"><span class="n">04</span> 自助筛选</div>
+          <h3>销售筛选平台 · 数据项 + 信息项</h3>
+          <p class="goal">主链鱼骨不变：在「甲醇」空间内，销售分别勾选<strong>数据项</strong>（如市场价字段）与<strong>信息项</strong>（如甲醇周评）。两类均以标准 ID 匹配目录，AI 负责预填、释义与冲突校验，替代 PM 线下制表。</p>
+          <div class="ai-box">
+            <h4>AI 介入要素</h4>
+            <ul>
+              <li>双目录预填：对话槽位分别映射数据项 ID / 信息项 ID</li>
+              <li>字段与资讯助理：口径/单位/更新频率，或报告频次与覆盖范围</li>
+              <li>组合推荐：「同类客户常选市场价华东日度 + 甲醇周评」</li>
+              <li>合法性校验：互斥条件、无数据/无报告区间提前告警</li>
+            </ul>
+          </div>
+          <div class="change">
+            <div><strong>新增补充</strong>信息项与数据项并列筛选，均带 ID（例：INFO-MEOH-WK）</div>
+            <div><strong>AI 后变化</strong>销售所见即所得；PM 仅在异常/无目录时介入</div>
+          </div>
+        </div>
+        <div class="proto">
+          <div class="device">
+            <div class="device-bar"><div class="dots"><i></i><i></i><i></i></div><span>销售端 · 筛选平台</span></div>
+            <div class="screen">
+              <div class="filter-layout">
+                <aside class="side">
+                  <div class="active">甲醇 / 市场价</div>
+                  <div class="item">甲醇 / 出厂价</div>
+                  <div class="item">甲醇 / 周评</div>
+                  <div class="item">乙烯 / 市场价</div>
+                </aside>
+                <div class="main">
+                  <div class="breadcrumb">数据集成 · 甲醇 · AI 已预填对话结果</div>
+                  <div class="seg-tabs">
+                    <span class="tab on">数据项</span>
+                    <span class="tab">信息项</span>
+                  </div>
+                  <div class="filters">
+                    <div class="field"><label>地区</label><select><option>华东</option><option>华北</option><option>华南</option><option>全国</option></select></div>
+                    <div class="field"><label>时间窗</label><select><option>近 1 年</option><option>近 2 年</option><option>近 3 年</option></select></div>
+                    <div class="field"><label>频率</label><select><option>日度</option><option>周度</option><option>月度</option></select></div>
+                  </div>
+                  <div class="table">
+                    <div class="th"><span></span><span>名称</span><span>ID</span><span>口径</span><span>更新</span></div>
+                    <div class="tr on"><span>☐</span><span>市场价</span><span class="id-chip">DATA-MEOH-SPOT</span><span>含税均价</span><span>日</span></div>
+                    <div class="tr on"><span>☐</span><span>地区</span><span class="id-chip">DATA-MEOH-REG</span><span>华东</span><span>—</span></div>
+                    <div class="tr"><span>☐</span><span>规格</span><span class="id-chip">DATA-MEOH-SPEC</span><span>优等品</span><span>—</span></div>
+                    <div class="tr on"><span>☐</span><span>甲醇周评</span><span class="id-chip">INFO-MEOH-WK</span><span>周报资讯</span><span>周</span></div>
+                  </div>
+                  <div class="footer-bar">
+                    <div class="chip">已选 2 数据项 + 1 信息项 · 周期即期 1 年</div>
+                    <button class="btn copper">生成报价与表格</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- N5 -->
+    <article class="node" id="n5">
+      <div class="node-top">
+        <div class="node-info">
+          <div class="node-tag"><span class="n">05</span> 报价出表</div>
+          <h3>自动报价 + 线下交付表</h3>
+          <p class="goal">筛选确认后，系统直接产出报价单与可发给客户的标准 Excel/方案表（数据项字段 + 信息项清单一并落表）。后续「销售核对方案 → 提交审批」尽量变成确认动作。</p>
+          <div class="ai-box">
+            <h4>AI 介入要素</h4>
+            <ul>
+              <li>计价引擎：数据项 + 信息项 × 周期 × 商品线折扣 / 续签规则</li>
+              <li>表格模板匹配：按历史线下表头自动落列与样例行</li>
+              <li>方案说明生成：给客户的非技术语言摘要</li>
+              <li>新签/续签分叉：续签按旧订单号复用并 diff 变更点</li>
+            </ul>
+          </div>
+          <div class="change">
+            <div><strong>现状痛点</strong>报价与表格依赖 PM 手工；续签也需线下通知改单</div>
+            <div><strong>AI 后变化</strong>筛选结束即出「价 + 表」；销售只做对错确认</div>
+          </div>
+        </div>
+        <div class="proto">
+          <div class="device">
+            <div class="device-bar"><div class="dots"><i></i><i></i><i></i></div><span>自动产出 · 报价与表格</span></div>
+            <div class="screen">
+              <div class="app-top">
+                <div class="brand">方案产出<em>Quote + Sheet</em></div>
+                <span class="chip">新签</span>
+              </div>
+              <div class="quote">
+                <div class="quote-grid">
+                  <div class="sheet">
+                    <h5>交付表格预览 · 甲醇市场价</h5>
+                    <table>
+                      <thead>
+                        <tr><th>日期</th><th>地区</th><th>市场价</th><th>单位</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr><td>2025-08-01</td><td>华东</td><td>2,450</td><td>元/吨</td></tr>
+                        <tr><td>2025-08-02</td><td>华东</td><td>2,460</td><td>元/吨</td></tr>
+                        <tr><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="bill">
+                    <h5>报价摘要</h5>
+                    <div class="line"><span>商品线</span><span>甲醇</span></div>
+                    <div class="line"><span>数据项</span><span>市场价等 2 项</span></div>
+                    <div class="line"><span>信息项</span><span>甲醇周评 · INFO-MEOH-WK</span></div>
+                    <div class="line"><span>周期</span><span>即期 1 年</span></div>
+                    <div class="line"><span>计价规则</span><span>标准目录价</span></div>
+                    <div class="total"><span>建议报价</span><span>¥ 48,000</span></div>
+                  </div>
+                </div>
+                <div class="actions">
+                  <button class="btn">下载线下表格</button>
+                  <button class="btn secondary">发给客户确认</button>
+                  <button class="btn copper">提交审批</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- N6 -->
+    <article class="node" id="n6">
+      <div class="node-top">
+        <div class="node-info">
+          <div class="node-tag"><span class="n">06</span> 闭环与底座</div>
+          <h3>交付闭环 + 知识底座</h3>
+          <p class="goal">报价出表之后的审批、开通权限、签约尽量自动化填单与状态追踪；底层用「商品 → 数据项/信息项 → 模板 → 计价」知识本体支撑前序节点。交付完成后可进入节点 07 做项目修改。</p>
+          <div class="ai-box">
+            <h4>AI 介入要素</h4>
+            <ul>
+              <li>OA 审批单自动填报：客户、方案、报价、附件表</li>
+              <li>开通与签约进度机器人：超时/驳回原因摘要</li>
+              <li>知识图谱：商品→数据项ID / 信息项ID→模板→价规</li>
+              <li>反馈闭环：销售改选项反哺推荐与词典</li>
+            </ul>
+          </div>
+          <div class="change">
+            <div><strong>现状痛点</strong>后半段仍大量线下通知；前半段缺少统一主数据</div>
+            <div><strong>AI 后变化</strong>后半段可确认化；交付后变更走节点 07 版本化审批</div>
+          </div>
+        </div>
+        <div class="proto">
+          <div class="device">
+            <div class="device-bar"><div class="dots"><i></i><i></i><i></i></div><span>闭环追踪 · 知识底座</span></div>
+            <div class="screen">
+              <div class="app-top">
+                <div class="brand">交付闭环<em>Track</em></div>
+                <span class="chip">订单 DRAFT-8891 · V1</span>
+              </div>
+              <div class="steps">
+                <div class="step done"><div class="idx">✓</div><div>方案与报价已生成</div><div class="st">完成</div></div>
+                <div class="step done"><div class="idx">✓</div><div>OA 审批单已自动预填</div><div class="st">完成</div></div>
+                <div class="step done"><div class="idx">✓</div><div>权限开通 / 合同签署</div><div class="st">完成</div></div>
+                <div class="step"><div class="idx">4</div><div>交付后可发起项目修改</div><div class="st wait">入口已开</div></div>
+              </div>
+              <div class="kb">
+                <div class="card">
+                  <h5>知识本体片段</h5>
+                  <div class="tree">甲醇<br/>├ 数据项 DATA-MEOH-SPOT<br/>│&nbsp;&nbsp;└ 市场价 / 地区 / 规格<br/>└ 信息项 INFO-MEOH-WK<br/>&nbsp;&nbsp;&nbsp;&nbsp;└ 甲醇周评 · 即期1年</div>
+                </div>
+                <div class="card">
+                  <h5>当前交付版本</h5>
+                  <p><span class="ver-badge">V1 生效中</span><br/><br/>含数据项 2 + 信息项 1。变更请走「项目修改审批」，生成 V2 补充记录，不覆盖 V1。</p>
+                </div>
+                <div class="card">
+                  <h5>快捷入口</h5>
+                  <p>客户要求更换周评或调整周期时，从本单进入修改审批。<br/><a href="#n7" style="color:var(--teal);font-weight:700;">→ 打开项目修改</a></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- N7 -->
+    <article class="node" id="n7">
+      <div class="node-top">
+        <div class="node-info">
+          <div class="node-tag"><span class="n">07</span> 交付后变更</div>
+          <h3>项目修改审批（版本化）</h3>
+          <p class="goal">项目交付后若需更换数据项、信息项或数据周期，<strong>默认不新开线索</strong>，挂在原订单走变更单：修改 → 提交 → 审批 → 执行。系统生成补充版本（V1、V2…）。仅新客户 / 新商品线 / 改加工 / 超合同边界时，才引导回节点 01 新提需求。</p>
+          <div class="ai-box">
+            <h4>改单 vs 新需求 · AI 介入</h4>
+            <ul>
+              <li>同单换项/周期（目录可覆盖）→ 变更单，复用筛选与报价，跳过对话与 PM 判定</li>
+              <li>更换数据项 / 信息项 / 周期：单个或多个，按 DATA-ID / INFO-ID</li>
+              <li>边界场景（新商品线、改加工、超合同）→ 建议转节点 01 新需求</li>
+              <li>AI：路由建议 + diff 旧方案 + 重算报价 + 预填审批单</li>
+            </ul>
+          </div>
+          <div class="change">
+            <div><strong>默认路径</strong>同单 Change Order → Vn，不新开线索号</div>
+            <div><strong>版本规则</strong>不覆盖旧版；权限与交付按最新已通过版本生效</div>
+          </div>
+        </div>
+        <div class="proto">
+          <div class="device">
+            <div class="device-bar"><div class="dots"><i></i><i></i><i></i></div><span>交付后 · 项目修改</span></div>
+            <div class="screen">
+              <div class="app-top">
+                <div class="brand">项目修改<em>Change Order</em></div>
+                <span class="ver-badge">当前 V1 → 拟生成 V2</span>
+              </div>
+              <div style="padding:12px 14px 0;font-size:12px;color:var(--ink-soft);">
+                订单 DRAFT-8891 · CL-2026-0807 · 已交付
+              </div>
+              <div class="route-box">
+                <div class="ttl">入口分流（AI 建议）</div>
+                <div class="opt on"><strong>✓ 项目修改</strong><span>同单变更 · 目录可覆盖，复用筛选/报价</span></div>
+                <div class="opt"><strong>□ 转新需求</strong><span>超合同 / 新商品线 / 需重判集成或加工</span></div>
+              </div>
+              <div class="mod-grid">
+                <div class="mod-opt on"><b>更换数据项</b><span>单个 / 多个 · 按 DATA-ID</span></div>
+                <div class="mod-opt"><b>更换信息项</b><span>单个 / 多个 · 按 INFO-ID</span></div>
+                <div class="mod-opt on"><b>更换数据周期</b><span>单个 / 多个时间窗</span></div>
+                <div class="mod-opt"><b>组合变更</b><span>项 + 周期一并调整</span></div>
+              </div>
+              <div class="diff-box">
+                <div class="line"><span class="k">信息项</span><span><span class="old">甲醇周评 INFO-MEOH-WK</span> → <span class="new">甲醇月评 INFO-MEOH-MO</span></span></div>
+                <div class="line"><span class="k">数据周期</span><span><span class="old">即期 1 年</span> → <span class="new">即期 2 年</span></span></div>
+                <div class="line"><span class="k">报价影响</span><span class="new">+¥ 12,000（待审批确认）</span></div>
+              </div>
+              <div class="flow-mini">
+                <span class="f done">1 修改</span><span class="arrow">→</span>
+                <span class="f">2 提交</span><span class="arrow">→</span>
+                <span class="f">3 审批</span><span class="arrow">→</span>
+                <span class="f">4 执行 V2</span>
+              </div>
+              <div class="actions" style="padding:0 14px 14px;">
+                <button class="btn copper">提交修改审批</button>
+                <button class="btn secondary">转为新需求</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <footer class="wrap">
+    <p>
+      使用建议：先用节点 01–05 跑通「甲醇市场价 + 甲醇周评」标准集成主路径；筛选平台同时维护数据项 ID 与信息项 ID。
+      节点 06 的知识底座与 OA 打通可并行建设；交付后变更<strong>默认同单走节点 07</strong>（修改→审批→按 Vn 执行），边界场景才新开线索。
+      数据加工分支保持现有项目经理/分析师流程，仅复用需求结构化结果。
+    </p>
+  </footer>
+
+  <script>
+    // Subtle staggered reveal for prototypes in view
+    const devices = document.querySelectorAll('.device');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.style.animationDelay = '0.05s';
+          e.target.classList.add('in');
+        }
+      });
+    }, { threshold: 0.15 });
+    devices.forEach((d) => io.observe(d));
+  </script>
+</body>
+</html>
